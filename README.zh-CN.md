@@ -4,21 +4,26 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-HyperExplorer 将 Windows 资源管理器的高效逻辑带到 macOS：可编辑地址栏、常驻文件夹树、Everything 级极速搜索，同时保持原生 macOS 设计风格。
+HyperExplorer 将 Windows 资源管理器的高效逻辑带到 macOS：可编辑地址栏、常驻文件夹树、极速搜索，同时保持原生 macOS 设计风格。
 
 ![HyperExplorer Screenshot](./docs/screenshot.png)
 
 ## 功能特性
 
 - **可编辑地址栏** — 输入路径导航、复制粘贴、面包屑点击跳转
-- **文件夹树状图** — Windows 风格可折叠树，懒加载
-- **极速搜索** — SQLite FTS5 + Rust 驱动的毫秒级全盘搜索
+- **文件夹树状图** — Windows 风格可折叠树，懒加载，目录变更自动刷新
+- **极速搜索** — SQLite FTS5 + Rust 并行索引驱动的全盘搜索，支持正则模式
 - **智能分类** — 图片、视频、文档、音频、压缩包、代码文件快捷筛选
 - **多标签页 & 多窗口** — 标签页可跨窗口拖拽，每个标签页独立导航历史
+- **4 种视图模式** — 列表、图标网格、分栏（Finder 风格）、画廊（缩略图预览）
+- **双栏视图** — 左右分屏浏览，独立导航
 - **Cmd+X 剪切** — 原生剪切支持，告别 Cmd+C → Cmd+Option+V
+- **批量重命名** — 替换、前缀、后缀、计数器四种模式，实时预览
 - **QuickLook 预览** — 按空格键预览文件（文本、图片、视频、音频、PDF）
-- **右键菜单** — Windows 风格，20+ 操作："新建文件"、"在终端打开"、"复制路径"等
+- **右键菜单** — 丰富的右键操作：文件类型创建、批量操作、"用…打开"
+- **拖拽操作** — 拖拽文件到文件列表或侧边栏的文件夹中移动
 - **深色模式** — 浅色 / 深色 / 跟随系统
+- **自动更新** — 内置更新检查，基于 GitHub Releases
 - **国际化** — 英语、简体中文
 
 ## 技术栈
@@ -30,6 +35,7 @@ HyperExplorer 将 Windows 资源管理器的高效逻辑带到 macOS：可编辑
 | 后端 | Rust (2021 edition) |
 | 样式 | Tailwind CSS 4 + shadcn/ui |
 | 搜索引擎 | SQLite FTS5 + 并行文件遍历 |
+| 虚拟滚动 | @tanstack/react-virtual |
 | 构建工具 | Vite 7 |
 | 包管理器 | pnpm |
 

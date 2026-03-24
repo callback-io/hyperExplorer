@@ -4,21 +4,26 @@ A modern, fast file manager for macOS — built with Rust and React.
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-HyperExplorer brings the best of Windows Explorer to macOS: an editable address bar, a persistent folder tree, and blazing-fast Everything-style search — all wrapped in a native macOS design.
+HyperExplorer brings the best of Windows Explorer to macOS: an editable address bar, a persistent folder tree, and blazing-fast search — all wrapped in a native macOS design.
 
 ![HyperExplorer Screenshot](./docs/screenshot.png)
 
 ## Features
 
 - **Editable Address Bar** — Navigate by typing paths, copy/paste, breadcrumb clicking
-- **Folder Tree Sidebar** — Windows-style collapsible tree with lazy loading
-- **Everything-Style Search** — Millisecond-level full-disk search powered by SQLite FTS5 + Rust
+- **Folder Tree Sidebar** — Windows-style collapsible tree with lazy loading and auto-refresh on changes
+- **Fast Search** — Full-disk search powered by SQLite FTS5 + Rust parallel indexing, with regex mode
 - **Smart Categories** — Quick filters for images, videos, documents, audio, archives, and code files
 - **Multi-Tab & Multi-Window** — Drag tabs between windows, per-tab navigation history
+- **4 View Modes** — List, Icon Grid, Column (Finder-style), and Gallery (thumbnail preview)
+- **Split Pane** — Side-by-side dual-pane browsing with independent navigation
 - **Cmd+X Cut** — Native cut support, no more Cmd+C → Cmd+Option+V
+- **Batch Rename** — Replace, prefix, suffix, and counter modes with live preview
 - **QuickLook Preview** — Press Space to preview files (text, images, video, audio, PDF)
-- **Context Menus** — Windows-style right-click with 20+ actions: "New File", "Open in Terminal", "Copy Path", etc.
+- **Context Menus** — Rich right-click menus with file type creation, batch operations, and "Open With"
+- **Drag & Drop** — Drag files to folders in the file list or sidebar to move them
 - **Dark Mode** — Light / Dark / System theme
+- **Auto Update** — Built-in update checker via GitHub Releases
 - **i18n** — English and Simplified Chinese
 
 ## Tech Stack
@@ -30,6 +35,7 @@ HyperExplorer brings the best of Windows Explorer to macOS: an editable address 
 | Backend | Rust (2021 edition) |
 | Styling | Tailwind CSS 4 + shadcn/ui |
 | Search Engine | SQLite FTS5 + parallel filesystem traversal |
+| Virtual Scrolling | @tanstack/react-virtual |
 | Build Tool | Vite 7 |
 | Package Manager | pnpm |
 
