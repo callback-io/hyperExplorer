@@ -66,7 +66,10 @@ export const FileListItem = memo(function FileListItem({
             className="h-6 border-blue-400 bg-white/90 px-2 py-0.5 shadow-sm focus-visible:border-blue-500 focus-visible:ring-1 focus-visible:ring-blue-400/50 focus-visible:ring-offset-0 dark:bg-gray-800/90"
           />
         ) : (
-          <span className="truncate">{entry.name}</span>
+          <span className="truncate">
+            {entry.name}
+            {entry.is_symlink && <span className="text-muted-foreground ml-1 text-xs">→</span>}
+          </span>
         )}
       </div>
       <div className="text-muted-foreground w-24 shrink-0 px-2 text-right">

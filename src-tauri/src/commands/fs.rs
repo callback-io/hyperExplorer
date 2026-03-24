@@ -83,6 +83,7 @@ pub struct FileEntry {
     pub name: String,
     pub path: String,
     pub is_dir: bool,
+    pub is_symlink: bool,
     pub size: u64,
     pub modified: Option<u64>,
     pub extension: Option<String>,
@@ -138,6 +139,9 @@ fn load_directory_entries(path: &str, show_hidden: bool) -> Result<Vec<FileEntry
                 }
 
                 let is_dir = file_path.is_dir();
+                let is_symlink = fs::symlink_metadata(&file_path)
+                    .map(|m| m.file_type().is_symlink())
+                    .unwrap_or(false);
 
                 // Get metadata - try both entry.metadata() and fs::metadata()
                 let metadata = entry
@@ -180,6 +184,7 @@ fn load_directory_entries(path: &str, show_hidden: bool) -> Result<Vec<FileEntry
                     name,
                     path: file_path.to_string_lossy().to_string(),
                     is_dir,
+                    is_symlink,
                     size,
                     modified,
                     extension,
