@@ -9,5 +9,8 @@
   "duplicateTab": "Duplicate Tab",
   "newTabLeft": "New Tab to Left",
   "newTabRight": "New Tab to Right",
-  "openInNewWindow": "Open in New Window"
+  "openInNewWindow": "Open in New Window",
+  "workspaces": "Workspaces",
+  "save_workspace": "Save Current Workspace",
+  "workspace_name_prompt": "Workspace name:"
 }

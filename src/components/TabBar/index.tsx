@@ -3,7 +3,9 @@
  * 单一职责：Tab 栏容器，组合 TabItem 和 NewTabButton，处理拖拽排序
  */
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useTabs } from "@/hooks/useTabs";
+import { useWorkspaces } from "@/stores/workspaces";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { TabItem } from "./TabItem";
 import { TabContextMenu } from "./TabContextMenu";
@@ -263,6 +265,80 @@ export function TabBar() {
         </TabContextMenu>
       ))}
       <NewTabButton onClick={handleNewTab} />
+      <WorkspaceMenu />
+    </div>
+  );
+}
+
+/** 工作区保存/恢复菜单 */
+function WorkspaceMenu() {
+  const { t } = useTranslation();
+  const { tabs, activeTabId, initTabs, addTab } = useTabs();
+  const { workspaces, saveWorkspace, deleteWorkspace } = useWorkspaces();
+  const [open, setOpen] = useState(false);
+
+  const handleSave = () => {
+    const name = prompt(t("tabs.workspace_name_prompt"));
+    if (!name) return;
+    const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
+    saveWorkspace(
+      name,
+      tabs.map((tab) => ({ path: tab.path, title: tab.title })),
+      Math.max(0, activeIndex)
+    );
+    setOpen(false);
+  };
+
+  const handleRestore = (ws: (typeof workspaces)[0]) => {
+    if (ws.tabs.length === 0) return;
+    initTabs(ws.tabs[0].path);
+    ws.tabs.slice(1).forEach((tab) => addTab(tab.path, tab.title));
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        className="text-muted-foreground hover:text-foreground flex h-full items-center px-2 text-xs transition-colors"
+        onClick={() => setOpen(!open)}
+        title={t("tabs.workspaces")}
+      >
+        ◆
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="bg-popover border-border absolute top-full right-0 z-50 mt-1 w-56 rounded-md border p-1 shadow-md">
+            <button
+              className="hover:bg-accent flex w-full items-center rounded-sm px-2 py-1.5 text-sm"
+              onClick={handleSave}
+            >
+              {t("tabs.save_workspace")}
+            </button>
+            {workspaces.length > 0 && <div className="bg-border my-1 h-px" />}
+            {workspaces.map((ws) => (
+              <div key={ws.id} className="hover:bg-accent group flex items-center rounded-sm">
+                <button
+                  className="flex-1 truncate px-2 py-1.5 text-left text-sm"
+                  onClick={() => handleRestore(ws)}
+                >
+                  {ws.name}
+                  <span className="text-muted-foreground ml-1 text-xs">({ws.tabs.length})</span>
+                </button>
+                <button
+                  className="text-muted-foreground hover:text-destructive hidden shrink-0 px-2 group-hover:block"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteWorkspace(ws.id);
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
