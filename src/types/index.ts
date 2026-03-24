@@ -75,6 +75,7 @@ export interface FileActions {
   onRename?: (entry: FileEntry) => void;
   onGoToLocation?: (entry: FileEntry) => void;
   onBatchRename?: (entries: FileEntry[]) => void;
+  onGetInfo?: (entry: FileEntry) => void;
   currentPath: string;
 }
 

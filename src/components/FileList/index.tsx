@@ -21,6 +21,7 @@ import { FileGridItem } from "./components/FileGridItem";
 import { FileColumnView } from "./components/FileColumnView";
 import { FileGalleryView } from "./components/FileGalleryView";
 import { BatchRenameDialog } from "@/components/BatchRenameDialog";
+import { FileInfoDialog } from "@/components/FileInfoDialog";
 
 /** 列表视图固定行高 */
 const LIST_ITEM_HEIGHT = 40;
@@ -152,6 +153,7 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
   // 6. 批量重命名
   const [batchRenameFiles, setBatchRenameFiles] = useState<FileEntry[]>([]);
   const [showBatchRename, setShowBatchRename] = useState(false);
+  const [fileInfoEntry, setFileInfoEntry] = useState<FileEntry | null>(null);
 
   // 7. 快速预览
   const { quickLookEntry, setQuickLookEntry } = useQuickLook({
@@ -295,6 +297,9 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
     onBatchRename: (entries: FileEntry[]) => {
       setBatchRenameFiles(entries);
       setShowBatchRename(true);
+    },
+    onGetInfo: (entry: FileEntry) => {
+      setFileInfoEntry(entry);
     },
     currentPath,
   };
@@ -506,6 +511,15 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
         onOpenChange={setShowBatchRename}
         selectedFiles={batchRenameFiles}
         onComplete={() => loadEntries(false)}
+      />
+
+      <FileInfoDialog
+        key={fileInfoEntry?.path ?? "no-info"}
+        open={!!fileInfoEntry}
+        onOpenChange={(open) => {
+          if (!open) setFileInfoEntry(null);
+        }}
+        entry={fileInfoEntry}
       />
     </>
   );

@@ -19,6 +19,7 @@ import {
   Scissors,
   Terminal,
   Trash2,
+  Info,
 } from "lucide-react";
 
 interface FileMenuContentProps {
@@ -126,6 +127,15 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
         label={t("context_menu.copy_path")}
         onClick={() => actions.onCopyPath(entry)}
       />
+
+      {actions.onGetInfo && (
+        <MenuItem
+          fallbackIcon={Info}
+          label={t("context_menu.get_info")}
+          shortcut="⌘I"
+          onClick={() => actions.onGetInfo?.(entry)}
+        />
+      )}
 
       {!entry.readonly && (
         <>

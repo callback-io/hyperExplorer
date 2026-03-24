@@ -16,6 +16,18 @@
       "items": "{{count}} items",
       "disk_free": "{{size}} available"
     },
+    "file_info": {
+      "title": "File Info",
+      "name": "Name",
+      "path": "Location",
+      "kind": "Kind",
+      "size": "Size",
+      "items": "Items",
+      "created": "Created",
+      "modified": "Modified",
+      "readonly": "Read Only",
+      "symlink_target": "Link Target"
+    },
     "quick_look": {
       "preview": "Quick Look",
       "open": "Open",

@@ -16,6 +16,18 @@
       "items": "{{count}} 个项目",
       "disk_free": "{{size}} 可用"
     },
+    "file_info": {
+      "title": "文件详情",
+      "name": "名称",
+      "path": "位置",
+      "kind": "类型",
+      "size": "大小",
+      "items": "项目数",
+      "created": "创建时间",
+      "modified": "修改时间",
+      "readonly": "只读",
+      "symlink_target": "链接目标"
+    },
     "quick_look": {
       "preview": "快速预览",
       "open": "打开",

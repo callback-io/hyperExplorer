@@ -330,6 +330,97 @@ pub fn exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+/// 获取文件/文件夹详细信息
+#[derive(Debug, Serialize)]
+pub struct FileInfo {
+    pub name: String,
+    pub path: String,
+    pub is_dir: bool,
+    pub size: u64,
+    pub created: Option<u64>,
+    pub modified: Option<u64>,
+    pub accessed: Option<u64>,
+    pub readonly: bool,
+    pub is_symlink: bool,
+    pub symlink_target: Option<String>,
+    pub extension: Option<String>,
+    pub item_count: Option<u64>,
+}
+
+#[tauri::command]
+pub fn get_file_info(path: String) -> Result<FileInfo, String> {
+    let path_obj = Path::new(&path);
+    if !path_obj.exists() {
+        return Err("Path does not exist".to_string());
+    }
+
+    let symlink_meta = fs::symlink_metadata(&path).map_err(|e| e.to_string())?;
+    let is_symlink = symlink_meta.file_type().is_symlink();
+    let symlink_target = if is_symlink {
+        fs::read_link(&path)
+            .ok()
+            .map(|p| p.to_string_lossy().to_string())
+    } else {
+        None
+    };
+
+    let metadata = fs::metadata(&path).map_err(|e| e.to_string())?;
+    let is_dir = metadata.is_dir();
+
+    let to_epoch = |t: std::io::Result<SystemTime>| -> Option<u64> {
+        t.ok()
+            .and_then(|t| t.duration_since(SystemTime::UNIX_EPOCH).ok())
+            .map(|d| d.as_secs())
+    };
+
+    // 计算文件夹大小和项目数
+    let (size, item_count) = if is_dir {
+        let mut total_size: u64 = 0;
+        let mut count: u64 = 0;
+        if let Ok(walker) = walkdir(&path) {
+            for entry in walker {
+                if let Ok(entry) = entry {
+                    if entry.file_type().map(|ft| ft.is_file()).unwrap_or(false) {
+                        total_size += entry.metadata().map(|m| m.len()).unwrap_or(0);
+                    }
+                    count += 1;
+                }
+            }
+        }
+        (total_size, Some(count))
+    } else {
+        (metadata.len(), None)
+    };
+
+    let name = path_obj
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| path.clone());
+
+    Ok(FileInfo {
+        name,
+        path: path.clone(),
+        is_dir,
+        size,
+        created: to_epoch(metadata.created()),
+        modified: to_epoch(metadata.modified()),
+        accessed: to_epoch(metadata.accessed()),
+        readonly: metadata.permissions().readonly(),
+        is_symlink,
+        symlink_target,
+        extension: path_obj.extension().map(|e| e.to_string_lossy().to_string()),
+        item_count,
+    })
+}
+
+fn walkdir(path: &str) -> Result<ignore::Walk, String> {
+    Ok(ignore::WalkBuilder::new(path)
+        .hidden(false)
+        .git_ignore(false)
+        .max_depth(Some(50))
+        .build())
+}
+
 /// 获取根磁盘可用空间（字节）
 #[tauri::command]
 pub fn get_disk_free() -> Result<u64, String> {

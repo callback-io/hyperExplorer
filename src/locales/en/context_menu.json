@@ -19,5 +19,6 @@
   "new_folder": "New Folder",
   "rename": "Rename",
   "go_to_location": "Go to File Location",
-  "batch_rename": "Batch Rename..."
+  "batch_rename": "Batch Rename...",
+  "get_info": "Get Info"
 }
