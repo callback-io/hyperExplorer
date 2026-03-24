@@ -12,6 +12,10 @@
     "view_column": "Column View",
     "view_gallery": "Gallery View",
     "split_pane": "Split Pane",
+    "status": {
+      "items": "{{count}} items",
+      "disk_free": "{{size}} available"
+    },
     "quick_look": {
       "preview": "Quick Look",
       "open": "Open",

@@ -12,6 +12,10 @@
     "view_column": "分栏视图",
     "view_gallery": "画廊视图",
     "split_pane": "双栏视图",
+    "status": {
+      "items": "{{count}} 个项目",
+      "disk_free": "{{size}} 可用"
+    },
     "quick_look": {
       "preview": "快速预览",
       "open": "打开",

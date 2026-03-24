@@ -330,6 +330,31 @@ pub fn exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+/// 获取根磁盘可用空间（字节）
+#[tauri::command]
+pub fn get_disk_free() -> Result<u64, String> {
+    #[cfg(target_os = "macos")]
+    {
+        return nix_statvfs("/");
+    }
+    #[cfg(not(target_os = "macos"))]
+    Ok(0)
+}
+
+#[cfg(target_os = "macos")]
+fn nix_statvfs(path: &str) -> Result<u64, String> {
+    use std::ffi::CString;
+    let c_path = CString::new(path).map_err(|e| e.to_string())?;
+    unsafe {
+        let mut stat: libc::statvfs = std::mem::zeroed();
+        if libc::statvfs(c_path.as_ptr(), &mut stat) == 0 {
+            Ok(stat.f_bavail as u64 * stat.f_frsize as u64)
+        } else {
+            Err("Failed to get disk info".to_string())
+        }
+    }
+}
+
 #[tauri::command]
 pub fn open_in_terminal(path: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
