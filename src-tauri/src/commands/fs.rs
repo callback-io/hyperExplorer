@@ -335,6 +335,72 @@ pub fn exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+/// 扫描目录空间占用（一级子目录 + 文件）
+#[derive(Debug, Serialize)]
+pub struct DiskUsageItem {
+    pub name: String,
+    pub path: String,
+    pub size: u64,
+    pub is_dir: bool,
+}
+
+#[tauri::command]
+pub async fn get_disk_usage(path: String) -> Result<Vec<DiskUsageItem>, String> {
+    tauri::async_runtime::spawn_blocking(move || scan_disk_usage(&path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn scan_disk_usage(root: &str) -> Result<Vec<DiskUsageItem>, String> {
+    let dir = Path::new(root);
+    if !dir.is_dir() {
+        return Err("Not a directory".to_string());
+    }
+
+    let mut items = Vec::new();
+
+    let entries = fs::read_dir(dir).map_err(|e| e.to_string())?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = entry.file_name().to_string_lossy().to_string();
+        if name.starts_with('.') {
+            continue;
+        }
+
+        let is_dir = path.is_dir();
+        let size = if is_dir {
+            dir_size(&path)
+        } else {
+            entry.metadata().map(|m| m.len()).unwrap_or(0)
+        };
+
+        items.push(DiskUsageItem {
+            name,
+            path: path.to_string_lossy().to_string(),
+            size,
+            is_dir,
+        });
+    }
+
+    items.sort_by(|a, b| b.size.cmp(&a.size));
+    Ok(items)
+}
+
+fn dir_size(path: &Path) -> u64 {
+    let walker = ignore::WalkBuilder::new(path)
+        .hidden(false)
+        .git_ignore(false)
+        .max_depth(Some(20))
+        .build();
+
+    walker
+        .flatten()
+        .filter_map(|e| e.metadata().ok())
+        .filter(|m| m.is_file())
+        .map(|m| m.len())
+        .sum()
+}
+
 /// 扫描重复文件
 #[derive(Debug, Serialize)]
 pub struct DuplicateGroup {
