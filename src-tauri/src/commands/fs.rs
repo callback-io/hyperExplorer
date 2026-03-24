@@ -509,3 +509,106 @@ pub fn rename(path: String, new_name: String) -> Result<(), String> {
     crate::cache::invalidate_dir_cache(&parent.to_string_lossy());
     Ok(())
 }
+
+/// 批量重命名结果
+#[derive(Debug, Serialize)]
+pub struct BatchRenameResult {
+    pub success: usize,
+    pub failed: usize,
+    pub errors: Vec<String>,
+}
+
+/// 批量重命名
+/// mode: "replace" | "prefix" | "suffix" | "counter"
+/// pattern: 替换/前缀/后缀的文本，或计数器格式如 "photo_{counter}"
+#[tauri::command]
+pub fn batch_rename(
+    paths: Vec<String>,
+    pattern: String,
+    mode: String,
+    find: Option<String>,
+) -> Result<BatchRenameResult, String> {
+    let mut success = 0;
+    let mut failed = 0;
+    let mut errors = Vec::new();
+    let mut parents_to_invalidate = std::collections::HashSet::new();
+
+    for (i, path_str) in paths.iter().enumerate() {
+        let path_obj = Path::new(path_str);
+        let parent = match path_obj.parent() {
+            Some(p) => p,
+            None => {
+                failed += 1;
+                errors.push(format!("{}: invalid path", path_str));
+                continue;
+            }
+        };
+
+        let old_name = match path_obj.file_stem() {
+            Some(s) => s.to_string_lossy().to_string(),
+            None => {
+                failed += 1;
+                errors.push(format!("{}: no filename", path_str));
+                continue;
+            }
+        };
+        let ext = path_obj
+            .extension()
+            .map(|e| format!(".{}", e.to_string_lossy()))
+            .unwrap_or_default();
+
+        let new_name = match mode.as_str() {
+            "replace" => {
+                let find_str = find.as_deref().unwrap_or("");
+                if find_str.is_empty() {
+                    failed += 1;
+                    errors.push(format!("{}: find string is empty", path_str));
+                    continue;
+                }
+                format!("{}{}", old_name.replace(find_str, &pattern), ext)
+            }
+            "prefix" => format!("{}{}{}", pattern, old_name, ext),
+            "suffix" => format!("{}{}{}", old_name, pattern, ext),
+            "counter" => {
+                let counter = format!("{}", i + 1);
+                let name = pattern.replace("{counter}", &counter).replace("{name}", &old_name);
+                format!("{}{}", name, ext)
+            }
+            _ => {
+                failed += 1;
+                errors.push(format!("{}: unknown mode '{}'", path_str, mode));
+                continue;
+            }
+        };
+
+        let new_path = parent.join(&new_name);
+
+        if new_path.exists() && new_path != path_obj {
+            failed += 1;
+            errors.push(format!("{}: target '{}' already exists", old_name, new_name));
+            continue;
+        }
+
+        match fs::rename(path_obj, &new_path) {
+            Ok(()) => {
+                success += 1;
+                parents_to_invalidate.insert(parent.to_string_lossy().to_string());
+            }
+            Err(e) => {
+                failed += 1;
+                errors.push(format!("{}: {}", old_name, e));
+            }
+        }
+    }
+
+    // 批量清除缓存
+    for parent in &parents_to_invalidate {
+        crate::cache::invalidate_dir_cache(parent);
+    }
+
+    Ok(BatchRenameResult {
+        success,
+        failed,
+        errors,
+    })
+}

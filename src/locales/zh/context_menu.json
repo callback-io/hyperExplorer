@@ -15,5 +15,6 @@
   "new_file": "新建文件",
   "new_folder": "新建文件夹",
   "rename": "重命名",
-  "go_to_location": "跳转到源文件"
+  "go_to_location": "跳转到源文件",
+  "batch_rename": "批量重命名..."
 }

@@ -11,5 +11,15 @@
   "error_paste": "粘贴失败: {{error}}",
   "error_delete": "删除失败: {{error}}",
   "error_rename": "重命名失败: {{error}}",
-  "error_path_not_exists": "路径不存在"
+  "error_path_not_exists": "路径不存在",
+  "batch_rename_title": "批量重命名 ({{count}} 个文件)",
+  "batch_rename_desc": "选择重命名模式并输入匹配规则",
+  "batch_rename_partial": "{{success}} 个成功，{{failed}} 个失败",
+  "rename_mode_replace": "替换",
+  "rename_mode_prefix": "添加前缀",
+  "rename_mode_suffix": "添加后缀",
+  "rename_mode_counter": "计数器",
+  "rename_find_placeholder": "查找文本...",
+  "rename_pattern_placeholder": "替换为 / 添加文本...",
+  "rename_counter_placeholder": "{name}_{counter}"
 }

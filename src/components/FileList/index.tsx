@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useCallback } from "react";
+import { useEffect, useMemo, useRef, useCallback, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -20,6 +20,7 @@ import { FileListItem } from "./components/FileListItem";
 import { FileGridItem } from "./components/FileGridItem";
 import { FileColumnView } from "./components/FileColumnView";
 import { FileGalleryView } from "./components/FileGalleryView";
+import { BatchRenameDialog } from "@/components/BatchRenameDialog";
 
 /** 列表视图固定行高 */
 const LIST_ITEM_HEIGHT = 40;
@@ -148,7 +149,11 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
     },
   });
 
-  // 6. 快速预览
+  // 6. 批量重命名
+  const [batchRenameFiles, setBatchRenameFiles] = useState<FileEntry[]>([]);
+  const [showBatchRename, setShowBatchRename] = useState(false);
+
+  // 7. 快速预览
   const { quickLookEntry, setQuickLookEntry } = useQuickLook({
     selectedPath,
     editingPath,
@@ -287,6 +292,10 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
     onDelete: handleDelete,
     onRename: handleStartRename,
     onGoToLocation: currentPath.startsWith(SMART_FOLDER_PREFIX) ? handleGoToLocation : undefined,
+    onBatchRename: (entries: FileEntry[]) => {
+      setBatchRenameFiles(entries);
+      setShowBatchRename(true);
+    },
     currentPath,
   };
 
@@ -495,6 +504,13 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
         key={quickLookEntry?.path ?? "empty"}
         entry={quickLookEntry}
         onClose={() => setQuickLookEntry(null)}
+      />
+
+      <BatchRenameDialog
+        open={showBatchRename}
+        onOpenChange={setShowBatchRename}
+        selectedFiles={batchRenameFiles}
+        onComplete={() => loadEntries(false)}
       />
     </>
   );

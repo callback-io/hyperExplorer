@@ -111,6 +111,15 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
         />
       )}
 
+      {targets.length > 1 && actions.onBatchRename && (
+        <MenuItem
+          sysIcon={{ type: "sfsymbol", value: SF_SYMBOLS.RENAME }}
+          fallbackIcon={Pencil}
+          label={t("context_menu.batch_rename")}
+          onClick={() => actions.onBatchRename?.(targets)}
+        />
+      )}
+
       <MenuItem
         sysIcon={{ type: "sfsymbol", value: SF_SYMBOLS.PASTE }}
         fallbackIcon={Link}

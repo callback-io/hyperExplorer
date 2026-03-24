@@ -11,5 +11,15 @@
   "error_paste": "Failed to paste: {{error}}",
   "error_delete": "Failed to delete: {{error}}",
   "error_rename": "Failed to rename: {{error}}",
-  "error_path_not_exists": "Path does not exist"
+  "error_path_not_exists": "Path does not exist",
+  "batch_rename_title": "Batch Rename ({{count}} files)",
+  "batch_rename_desc": "Choose a rename mode and enter your pattern",
+  "batch_rename_partial": "{{success}} renamed, {{failed}} failed",
+  "rename_mode_replace": "Replace",
+  "rename_mode_prefix": "Prefix",
+  "rename_mode_suffix": "Suffix",
+  "rename_mode_counter": "Counter",
+  "rename_find_placeholder": "Find text...",
+  "rename_pattern_placeholder": "Replace with / Add text...",
+  "rename_counter_placeholder": "{name}_{counter}"
 }
