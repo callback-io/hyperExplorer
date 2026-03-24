@@ -9,6 +9,7 @@ import {
   X,
   LayoutGrid,
   List as ListIcon,
+  Columns,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AppContextMenu } from "@/components/AppContextMenu";
@@ -336,6 +337,17 @@ export function TopBar() {
           title={t("common.view_list")}
         >
           <ListIcon className="h-4 w-4" />
+        </button>
+        <button
+          className={`rounded-sm p-1 transition-colors ${
+            viewMode === "column"
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setViewMode("column")}
+          title={t("common.view_column")}
+        >
+          <Columns className="h-4 w-4" />
         </button>
       </div>
 

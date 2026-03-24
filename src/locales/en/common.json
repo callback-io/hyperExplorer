@@ -9,6 +9,8 @@
     "file": "File",
     "view_icon": "Icon View",
     "view_list": "List View",
+    "view_column": "Column View",
+    "view_gallery": "Gallery View",
     "quick_look": {
       "preview": "Quick Look",
       "open": "Open",

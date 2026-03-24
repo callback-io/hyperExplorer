@@ -18,6 +18,7 @@ import { useQuickLook } from "./hooks/useQuickLook";
 import { FileListHeader } from "./components/FileListHeader";
 import { FileListItem } from "./components/FileListItem";
 import { FileGridItem } from "./components/FileGridItem";
+import { FileColumnView } from "./components/FileColumnView";
 
 /** 列表视图固定行高 */
 const LIST_ITEM_HEIGHT = 40;
@@ -331,7 +332,20 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
         }}
       >
         <div className="bg-background/60 h-full overflow-hidden p-4" tabIndex={0}>
-          {viewMode === "list" ? (
+          {viewMode === "column" ? (
+            <FileColumnView
+              currentPath={currentPath}
+              selectedPaths={selectedPaths}
+              editingPath={editingPath}
+              editValue={editValue}
+              onEditValueChange={setEditValue}
+              onSubmitRename={handleSubmitRename}
+              onCancelRename={handleCancelRename}
+              onClick={(entry, index, e) => handleClick(entry, index, e)}
+              onDoubleClick={handleOpen}
+              onNavigate={(path) => onNavigate(path)}
+            />
+          ) : viewMode === "list" ? (
             <>
               <FileListHeader
                 sortField={sortField}
