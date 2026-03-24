@@ -346,11 +346,6 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
             <FileColumnView
               currentPath={currentPath}
               selectedPaths={selectedPaths}
-              editingPath={editingPath}
-              editValue={editValue}
-              onEditValueChange={setEditValue}
-              onSubmitRename={handleSubmitRename}
-              onCancelRename={handleCancelRename}
               onClick={(entry, index, e) => handleClick(entry, index, e)}
               onDoubleClick={handleOpen}
               onNavigate={(path) => onNavigate(path)}

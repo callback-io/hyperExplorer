@@ -7,11 +7,6 @@ import { SmartIcon } from "@/components/SmartIcon";
 interface FileColumnViewProps {
   currentPath: string;
   selectedPaths: string[];
-  editingPath: string | null;
-  editValue: string;
-  onEditValueChange: (value: string) => void;
-  onSubmitRename: () => void;
-  onCancelRename: () => void;
   onClick: (entry: FileEntry, index: number, e: React.MouseEvent) => void;
   onDoubleClick: (entry: FileEntry) => void;
   onNavigate: (path: string) => void;
@@ -51,22 +46,24 @@ export function FileColumnView({
     init();
   }, [currentPath, loadColumn]);
 
-  // 选中文件夹时展开新列
+  // 选中文件夹时展开新列（使用函数式更新避免 columns 依赖）
   const handleSelect = useCallback(
     async (columnIndex: number, entry: FileEntry, entryIndex: number, e: React.MouseEvent) => {
-      // 更新点击回调
       onClick(entry, entryIndex, e);
 
-      // 截断右侧所有列
-      const newColumns = columns.slice(0, columnIndex + 1);
-      newColumns[columnIndex] = { ...newColumns[columnIndex], selectedPath: entry.path };
-
+      let newEntries: FileEntry[] = [];
       if (entry.is_dir) {
-        const entries = await loadColumn(entry.path);
-        newColumns.push({ path: entry.path, entries, selectedPath: null });
+        newEntries = await loadColumn(entry.path);
       }
 
-      setColumns(newColumns);
+      setColumns((prev) => {
+        const newColumns = prev.slice(0, columnIndex + 1);
+        newColumns[columnIndex] = { ...newColumns[columnIndex], selectedPath: entry.path };
+        if (entry.is_dir) {
+          newColumns.push({ path: entry.path, entries: newEntries, selectedPath: null });
+        }
+        return newColumns;
+      });
 
       // 自动滚动到最右侧
       requestAnimationFrame(() => {
@@ -76,7 +73,7 @@ export function FileColumnView({
         });
       });
     },
-    [columns, loadColumn, onClick]
+    [loadColumn, onClick]
   );
 
   // 双击文件夹时导航

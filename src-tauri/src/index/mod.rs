@@ -281,13 +281,18 @@ pub fn start_index_watcher(
     thread::spawn(move || {
         let (tx, rx) = std::sync::mpsc::channel();
 
-        let mut watcher = RecommendedWatcher::new(
+        let mut watcher = match RecommendedWatcher::new(
             move |res| {
                 let _ = tx.send(res);
             },
             Config::default(),
-        )
-        .expect("Failed to create watcher");
+        ) {
+            Ok(w) => w,
+            Err(e) => {
+                eprintln!("Failed to create index watcher: {:?}", e);
+                return;
+            }
+        };
 
         if let Err(e) = watcher.watch(std::path::Path::new(&root), RecursiveMode::Recursive) {
             eprintln!("Failed to watch root for index: {:?}", e);

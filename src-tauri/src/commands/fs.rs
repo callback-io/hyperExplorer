@@ -544,7 +544,8 @@ pub fn batch_rename(
             }
         };
 
-        let old_name = match path_obj.file_stem() {
+        // 处理文件名和扩展名（支持点文件如 .bashrc）
+        let file_name = match path_obj.file_name() {
             Some(s) => s.to_string_lossy().to_string(),
             None => {
                 failed += 1;
@@ -552,6 +553,10 @@ pub fn batch_rename(
                 continue;
             }
         };
+        let old_name = path_obj
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| file_name.clone());
         let ext = path_obj
             .extension()
             .map(|e| format!(".{}", e.to_string_lossy()))
