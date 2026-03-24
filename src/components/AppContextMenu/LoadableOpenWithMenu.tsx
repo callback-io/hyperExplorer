@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
-import { ExternalLink, Laptop } from "lucide-react";
+import { ExternalLink, Laptop, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   ContextMenuItem,
@@ -21,31 +21,24 @@ interface LoadableOpenWithMenuProps {
 export function LoadableOpenWithMenu({ entry }: LoadableOpenWithMenuProps) {
   const { t } = useTranslation();
   const [apps, setApps] = useState<InstalledApp[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!entry.is_dir);
 
   // 预加载应用列表 (当父菜单打开时立即开始)
   useEffect(() => {
+    if (entry.is_dir) return;
+
     let mounted = true;
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        if (entry.is_dir) {
-          if (mounted) setApps([]);
-        } else {
-          const result = await invoke<InstalledApp[]>("get_recommended_apps", { path: entry.path });
-          if (mounted) setApps(result);
-        }
-      } catch (error) {
+    invoke<InstalledApp[]>("get_recommended_apps", { path: entry.path })
+      .then((result) => {
+        if (mounted) setApps(result);
+      })
+      .catch((error) => {
         console.error("Failed to load apps", error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    load();
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
@@ -85,7 +78,8 @@ export function LoadableOpenWithMenu({ entry }: LoadableOpenWithMenuProps) {
       </ContextMenuSubTrigger>
       <ContextMenuSubContent className="max-h-80 w-64 overflow-y-auto">
         {loading ? (
-          <div className="text-muted-foreground flex justify-center p-2 text-xs">
+          <div className="text-muted-foreground flex items-center justify-center gap-2 p-2 text-xs">
+            <Loader2 className="h-3 w-3 animate-spin" />
             {t("common.loading")}
           </div>
         ) : apps.length === 0 ? (
