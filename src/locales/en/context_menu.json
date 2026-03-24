@@ -20,5 +20,7 @@
   "rename": "Rename",
   "go_to_location": "Go to File Location",
   "batch_rename": "Batch Rename...",
-  "get_info": "Get Info"
+  "get_info": "Get Info",
+  "add_favorite": "Add to Favorites",
+  "remove_favorite": "Remove from Favorites"
 }

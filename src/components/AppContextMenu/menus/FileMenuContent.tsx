@@ -20,7 +20,9 @@ import {
   Terminal,
   Trash2,
   Info,
+  Star,
 } from "lucide-react";
+import { useFavorites } from "@/stores/favorites";
 
 interface FileMenuContentProps {
   entry: FileEntry;
@@ -31,6 +33,7 @@ interface FileMenuContentProps {
 export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuContentProps) {
   const { t } = useTranslation();
   const clipboard = useClipboard();
+  const favorites = useFavorites();
 
   // 如果右键的文件在多选中，操作多选集合；否则只操作右键的文件
   const targets =
@@ -134,6 +137,24 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
           label={t("context_menu.get_info")}
           shortcut="⌘I"
           onClick={() => actions.onGetInfo?.(entry)}
+        />
+      )}
+
+      {entry.is_dir && (
+        <MenuItem
+          fallbackIcon={Star}
+          label={
+            favorites.isFavorite(entry.path)
+              ? t("context_menu.remove_favorite")
+              : t("context_menu.add_favorite")
+          }
+          onClick={() => {
+            if (favorites.isFavorite(entry.path)) {
+              favorites.removeFavorite(entry.path);
+            } else {
+              favorites.addFavorite({ name: entry.name, path: entry.path });
+            }
+          }}
         />
       )}
 

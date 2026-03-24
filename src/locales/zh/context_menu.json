@@ -20,5 +20,7 @@
   "rename": "重命名",
   "go_to_location": "跳转到源文件",
   "batch_rename": "批量重命名...",
-  "get_info": "显示简介"
+  "get_info": "显示简介",
+  "add_favorite": "添加到收藏",
+  "remove_favorite": "从收藏移除"
 }

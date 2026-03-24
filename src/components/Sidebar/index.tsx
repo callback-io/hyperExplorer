@@ -21,6 +21,7 @@ import { AppContextMenu } from "@/components/AppContextMenu";
 import { SmartIcon } from "@/components/SmartIcon";
 
 import { FileEntry, FolderItem, SidebarItemActions } from "@/types";
+import { useFavorites } from "@/stores/favorites";
 
 /** 侧边栏目录拖拽放入处理 */
 function makeSidebarDropHandlers(targetPath: string) {
@@ -286,6 +287,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [home, setHome] = useState<string>("");
+  const { favorites, removeFavorite } = useFavorites();
 
   useEffect(() => {
     invoke<string>("get_home_dir").then(setHome).catch(console.error);
@@ -374,6 +376,41 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           })}
         </div>
       </div>
+
+      {/* 收藏夹 */}
+      {favorites.length > 0 && (
+        <div className="border-border/50 border-b p-3">
+          <h3 className="text-muted-foreground mb-2 px-2 text-xs font-medium">
+            {t("sidebar.favorites")}
+          </h3>
+          <div className="space-y-0.5">
+            {favorites.map((fav) => (
+              <button
+                key={fav.path}
+                className="hover:bg-accent group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                onClick={() => onNavigate(fav.path)}
+                {...makeSidebarDropHandlers(fav.path)}
+              >
+                <SmartIcon
+                  icon={Folder}
+                  className="text-muted-foreground h-4 w-4"
+                  sysIcon={{ type: "path", value: fav.path }}
+                />
+                <span className="flex-1 truncate text-left">{fav.name}</span>
+                <button
+                  className="text-muted-foreground hover:text-foreground hidden shrink-0 group-hover:block"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFavorite(fav.path);
+                  }}
+                >
+                  ×
+                </button>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 文件夹树 */}
       <div className="flex-1 overflow-auto p-3">
