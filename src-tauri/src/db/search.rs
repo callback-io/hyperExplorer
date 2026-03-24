@@ -53,12 +53,21 @@ impl SearchEngine {
         }
         let fts_query = format!("{}*", sanitized);
 
+        let query_lower = sanitized.to_lowercase();
+
         let mut stmt = match conn.prepare(
             "SELECT f.name, f.name_lower, f.path, f.is_dir, f.size, f.modified_at, f.extension
              FROM files f
              JOIN files_fts fts ON f.id = fts.rowid
              WHERE files_fts MATCH ?1
-             ORDER BY rank
+             ORDER BY
+               CASE
+                 WHEN f.name_lower = ?3 THEN 0
+                 WHEN f.name_lower LIKE ?3 || '%' THEN 1
+                 WHEN f.name_lower LIKE '%' || ?3 || '%' THEN 2
+                 ELSE 3
+               END,
+               rank
              LIMIT ?2",
         ) {
             Ok(s) => s,
@@ -69,7 +78,7 @@ impl SearchEngine {
         };
 
         let results = stmt
-            .query_map(rusqlite::params![fts_query, limit as i64], |row| {
+            .query_map(rusqlite::params![fts_query, limit as i64, query_lower], |row| {
                 Ok(SearchResult {
                     name: row.get(0)?,
                     name_lower: row.get(1)?,
