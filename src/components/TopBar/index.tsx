@@ -11,6 +11,7 @@ import {
   List as ListIcon,
   Columns,
   GalleryHorizontalEnd,
+  PanelLeftClose,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AppContextMenu } from "@/components/AppContextMenu";
@@ -31,7 +32,7 @@ export function TopBar() {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(currentPath);
 
-  const { viewMode, setViewMode } = useViewMode();
+  const { viewMode, setViewMode, splitPane, toggleSplitPane } = useViewMode();
 
   // 搜索状态
   const [searchQuery, setSearchQuery] = useState("");
@@ -369,6 +370,17 @@ export function TopBar() {
           <GalleryHorizontalEnd className="h-4 w-4" />
         </button>
       </div>
+
+      {/* 双栏切换 */}
+      <button
+        className={`shrink-0 rounded-md p-1 transition-colors ${
+          splitPane ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
+        }`}
+        onClick={toggleSplitPane}
+        title={t("common.split_pane")}
+      >
+        <PanelLeftClose className="h-4 w-4" />
+      </button>
 
       {/* 正则切换 + 搜索框 */}
       <button

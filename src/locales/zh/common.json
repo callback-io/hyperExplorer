@@ -11,6 +11,7 @@
     "view_list": "列表视图",
     "view_column": "分栏视图",
     "view_gallery": "画廊视图",
+    "split_pane": "双栏视图",
     "quick_look": {
       "preview": "快速预览",
       "open": "打开",

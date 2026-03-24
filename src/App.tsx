@@ -11,6 +11,7 @@ import { settingsManager } from "@/lib/store";
 import { useSetting } from "@/hooks/useSetting";
 import { useTranslation } from "react-i18next";
 import { useTabs } from "@/hooks/useTabs";
+import { useViewMode } from "@/stores/viewMode";
 import { useTabShortcuts } from "@/hooks/useTabShortcuts";
 import { windowManager } from "@/lib/windowManager";
 
@@ -35,6 +36,7 @@ function App() {
 
   const { activeTab, tabs, initTabs, navigate, addTransferredTab, setHomePath, closeTab } =
     useTabs();
+  const { splitPane, splitPanePath, setSplitPanePath } = useViewMode();
 
   // 监听跨窗口 Tab 移动完成事件（关闭源 Tab 或窗口）
   useEffect(() => {
@@ -236,13 +238,29 @@ function App() {
             <Sidebar onNavigate={(path) => navigate(path)} />
 
             {/* 文件列表 */}
-            <main className="flex-1 overflow-auto">
-              {activeTab?.path ? (
-                <FileList currentPath={activeTab.path} onNavigate={navigate} fileToSelect={null} />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  {/* Optional: Add a spinner here if desired, or just blank until init */}
-                </div>
+            <main className="flex flex-1 overflow-auto">
+              <div className={splitPane ? "w-1/2 overflow-auto" : "flex-1 overflow-auto"}>
+                {activeTab?.path ? (
+                  <FileList
+                    currentPath={activeTab.path}
+                    onNavigate={navigate}
+                    fileToSelect={null}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center" />
+                )}
+              </div>
+              {splitPane && (
+                <>
+                  <div className="border-border/50 bg-border/50 w-px" />
+                  <div className="w-1/2 overflow-auto">
+                    <FileList
+                      currentPath={splitPanePath || activeTab?.path || "/"}
+                      onNavigate={(path) => setSplitPanePath(path)}
+                      fileToSelect={null}
+                    />
+                  </div>
+                </>
               )}
             </main>
           </div>
