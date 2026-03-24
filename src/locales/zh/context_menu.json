@@ -1,0 +1,19 @@
+{
+  "open": "打开",
+  "open_in_terminal": "在终端打开",
+  "open_with": "打开方式",
+  "no_apps_found": "未找到应用",
+  "other_app": "其他...",
+  "copy_path": "复制路径",
+  "copy": "复制",
+  "cut": "剪切",
+  "paste": "粘贴",
+  "move_to_trash": "移到废纸篓",
+  "delete": "删除",
+  "select_all": "全选",
+  "refresh": "刷新",
+  "new_file": "新建文件",
+  "new_folder": "新建文件夹",
+  "rename": "重命名",
+  "go_to_location": "跳转到源文件"
+}

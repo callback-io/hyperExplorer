@@ -1,0 +1,15 @@
+{
+  "col_name": "Name",
+  "col_size": "Size",
+  "col_date": "Date Modified",
+  "loading": "Loading...",
+  "empty_folder": "This folder is empty",
+  "empty_smart_folder": "No files found (Check indexing logic)",
+  "items_count": "{{count}} items",
+  "untitled_file": "untitled",
+  "untitled_folder": "untitled folder",
+  "error_paste": "Failed to paste: {{error}}",
+  "error_delete": "Failed to delete: {{error}}",
+  "error_rename": "Failed to rename: {{error}}",
+  "error_path_not_exists": "Path does not exist"
+}

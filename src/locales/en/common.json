@@ -1,0 +1,26 @@
+{
+  "app_name": "HyperExplorer",
+  "welcome": "Welcome to HyperExplorer",
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "folder": "Folder",
+    "file": "File",
+    "view_icon": "Icon View",
+    "view_list": "List View",
+    "quick_look": {
+      "preview": "Quick Look",
+      "open": "Open",
+      "modified": "Modified",
+      "error": "Failed to load"
+    }
+  },
+  "indexing": {
+    "title": "Building File Index",
+    "message": "Indexing your files for fast search. This may take a moment...",
+    "background": "Running in background...",
+    "scanning": "Scanning files...",
+    "indexed": "Indexed {{count}} files"
+  }
+}

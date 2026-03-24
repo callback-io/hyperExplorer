@@ -1,0 +1,18 @@
+{
+  "smart_categories": "智能分类",
+  "quick_access": "快速访问",
+  "folders": "文件夹",
+  "items": {
+    "home": "主目录",
+    "downloads": "下载",
+    "documents": "文档",
+    "music": "音乐",
+    "desktop": "桌面",
+    "pictures": "图片",
+    "videos": "视频",
+    "archives": "压缩包",
+    "developer": "开发者"
+  },
+  "settings": "设置",
+  "access_denied": "无访问权限"
+}

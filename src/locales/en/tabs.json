@@ -1,0 +1,13 @@
+{
+  "newTab": "New Tab",
+  "newTabShortcut": "New Tab (⌘T)",
+  "closeTab": "Close Tab",
+  "closeTabShortcut": "Close Tab (⌘W)",
+  "closeOtherTabs": "Close Other Tabs",
+  "closeTabsToRight": "Close Tabs to Right",
+  "copyPath": "Copy Path",
+  "duplicateTab": "Duplicate Tab",
+  "newTabLeft": "New Tab to Left",
+  "newTabRight": "New Tab to Right",
+  "openInNewWindow": "Open in New Window"
+}

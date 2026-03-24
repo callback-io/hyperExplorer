@@ -1,0 +1,47 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/
+
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+.cargo/
+
+
+# AI & IDE
+.gemini/
+.antigravity/
+.agent/
+.shared/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Analysis
+analysis/
+
+.history
+PROJECT_STATUS.md

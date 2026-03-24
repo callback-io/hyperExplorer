@@ -1,0 +1,18 @@
+{
+  "smart_categories": "Smart Categories",
+  "quick_access": "Quick Access",
+  "folders": "Folders",
+  "items": {
+    "home": "Home",
+    "downloads": "Downloads",
+    "documents": "Documents",
+    "music": "Music",
+    "desktop": "Desktop",
+    "pictures": "Pictures",
+    "videos": "Videos",
+    "archives": "Archives",
+    "developer": "Developer"
+  },
+  "settings": "Settings",
+  "access_denied": "Access denied"
+}

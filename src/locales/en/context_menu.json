@@ -1,0 +1,19 @@
+{
+  "open": "Open",
+  "open_in_terminal": "Open in Terminal",
+  "open_with": "Open With",
+  "no_apps_found": "No apps found",
+  "other_app": "Other...",
+  "copy_path": "Copy Path",
+  "copy": "Copy",
+  "cut": "Cut",
+  "paste": "Paste",
+  "move_to_trash": "Move to Trash",
+  "delete": "Delete",
+  "select_all": "Select All",
+  "refresh": "Refresh",
+  "new_file": "New File",
+  "new_folder": "New Folder",
+  "rename": "Rename",
+  "go_to_location": "Go to File Location"
+}

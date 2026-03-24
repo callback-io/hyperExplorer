@@ -1,0 +1,15 @@
+{
+  "col_name": "名称",
+  "col_size": "大小",
+  "col_date": "修改日期",
+  "loading": "加载中...",
+  "empty_folder": "此文件夹为空",
+  "empty_smart_folder": "未找到此类文件 (请确保已索引)",
+  "items_count": "{{count}} 项",
+  "untitled_file": "未命名文件",
+  "untitled_folder": "未命名文件夹",
+  "error_paste": "粘贴失败: {{error}}",
+  "error_delete": "删除失败: {{error}}",
+  "error_rename": "重命名失败: {{error}}",
+  "error_path_not_exists": "路径不存在"
+}

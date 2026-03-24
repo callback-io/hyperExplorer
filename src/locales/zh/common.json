@@ -1,0 +1,26 @@
+{
+  "app_name": "HyperExplorer",
+  "welcome": "欢迎使用 HyperExplorer",
+  "common": {
+    "cancel": "取消",
+    "confirm": "确定",
+    "loading": "加载中...",
+    "folder": "文件夹",
+    "file": "文件",
+    "view_icon": "图标视图",
+    "view_list": "列表视图",
+    "quick_look": {
+      "preview": "快速预览",
+      "open": "打开",
+      "modified": "修改时间",
+      "error": "加载失败"
+    }
+  },
+  "indexing": {
+    "title": "正在构建文件索引",
+    "message": "正在为您的文件建立索引以实现快速搜索，这可能需要一些时间...",
+    "background": "后台运行中...",
+    "scanning": "正在扫描文件...",
+    "indexed": "已索引 {{count}} 个文件"
+  }
+}

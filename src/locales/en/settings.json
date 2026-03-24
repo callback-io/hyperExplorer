@@ -1,0 +1,52 @@
+{
+  "title": "Settings",
+  "general": {
+    "title": "General",
+    "language": "Language",
+    "language_en": "English",
+    "language_zh": "Chinese",
+    "language_desc": "Select the display language for the application.",
+    "language_system": "System Default",
+    "theme": "Theme",
+    "theme_desc": "Select the application theme.",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_system": "System Default",
+    "terminal": "Default Terminal",
+    "terminal_desc": "Select the terminal emulator for \"Open in Terminal\".",
+    "terminal_default": "System Default",
+    "restart_required": "Language Changed",
+    "restart_required_message": "Menu language will be updated after restarting the app."
+  },
+  "shortcuts": {
+    "title": "Shortcuts",
+    "section_window": "Window & Tabs",
+    "new_window": "New Window",
+    "new_tab": "New Tab",
+    "close_tab": "Close Tab",
+    "prev_tab": "Previous Tab",
+    "next_tab": "Next Tab",
+    "switch_tab": "Switch to Tab {{n}}",
+    "section_file": "File Operations",
+    "new_file": "New File",
+    "new_folder": "New Folder",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "delete": "Move to Trash",
+    "select_all": "Select All",
+    "section_navigation": "Navigation",
+    "quick_look": "Quick Look"
+  },
+  "advanced": {
+    "title": "Advanced",
+    "full_disk_access": "Full Disk Access",
+    "full_disk_access_desc": "Required for listing system directories.",
+    "check_status": "Check Status",
+    "status_unknown": "Unknown",
+    "status_authorized": "Authorized",
+    "status_denied": "Denied",
+    "open_settings": "Open System Settings",
+    "full_disk_access_note": "Note: Changes may require an app restart to take effect."
+  }
+}

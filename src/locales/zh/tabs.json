@@ -1,0 +1,13 @@
+{
+  "newTab": "新建标签页",
+  "newTabShortcut": "新建标签页 (⌘T)",
+  "closeTab": "关闭标签页",
+  "closeTabShortcut": "关闭标签页 (⌘W)",
+  "closeOtherTabs": "关闭其他标签页",
+  "closeTabsToRight": "关闭右侧标签页",
+  "copyPath": "复制路径",
+  "duplicateTab": "复制标签页",
+  "newTabLeft": "在左侧新建标签页",
+  "newTabRight": "在右侧新建标签页",
+  "openInNewWindow": "在新窗口中打开"
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 主窗口的文件访问权限 -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    
+    <!-- 访问用户文件夹（Documents, Downloads 等）-->
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+    
+    <!-- 书签访问（保存用户选择的路径） -->
+    <key>com.apple.security.files.bookmarks.app-scope</key>
+    <true/>
+    
+    <!-- 继承权限到子进程（如打开终端） -->
+    <key>com.apple.security.inherit</key>
+    <true/>
+    
+    <!-- App Sandbox -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- 网络访问 -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+</dict>
+</plist>

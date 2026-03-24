@@ -1,0 +1,16 @@
+# Menu labels
+menu:
+  file: File
+  new_window: New HyperExplorer Window
+  close_window: Close Window
+  edit: Edit
+  undo: Undo
+  redo: Redo
+  cut: Cut
+  copy: Copy
+  paste: Paste
+  select_all: Select All
+  window: Window
+  minimize: Minimize
+  zoom: Zoom
+  fullscreen: Enter Full Screen
