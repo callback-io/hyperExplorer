@@ -18,7 +18,7 @@ use commands::fs::{
     open_in_terminal, open_url, read_image_base64, read_text_file, rename,
 };
 use commands::search::{get_smart_files, search_files};
-use commands::watcher::{stop_watching, watch_directory, WatcherState};
+use commands::watcher::{stop_watching, unwatch_directory, watch_directory, WatcherState};
 use db::{Database, IndexBuilder, IndexUpdater, SearchEngine};
 use index::{create_shared_index, IndexedFile, SharedIndex};
 use serde::Serialize;
@@ -389,6 +389,7 @@ pub fn run() {
             copy_file,
             move_file,
             watch_directory,
+            unwatch_directory,
             stop_watching,
             search_files,
             search_indexed,

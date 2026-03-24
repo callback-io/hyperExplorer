@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { SettingsDialog } from "@/components/SettingsDialog";
 import {
@@ -123,6 +124,45 @@ function FolderTreeItem({
 
   // 如果没有预设子项，默认为有子项（显示箭头），直到加载后确认
   const hasChildren = children.length > 0 || !hasLoaded;
+
+  // 刷新子目录列表
+  const refreshChildren = useCallback(async () => {
+    try {
+      const entries = await invoke<FileEntry[]>("get_entries", { path: item.path });
+      const subDirs = entries
+        .filter((e) => e.is_dir && !e.name.startsWith("."))
+        .map((e) => ({ name: e.name, path: e.path }));
+      setChildren(subDirs);
+    } catch {
+      // 静默失败
+    }
+  }, [item.path]);
+
+  // 展开时监听目录变化，折叠时取消监听
+  useEffect(() => {
+    if (!isExpanded || !hasLoaded) return;
+
+    let unlistenFn: (() => void) | null = null;
+    let cancelled = false;
+
+    const setup = async () => {
+      // 注册监听
+      invoke("watch_directory", { path: item.path }).catch(() => {});
+
+      unlistenFn = await listen<string>("dir-change", (event) => {
+        if (!cancelled && event.payload === item.path) {
+          refreshChildren();
+        }
+      });
+    };
+    setup();
+
+    return () => {
+      cancelled = true;
+      unlistenFn?.();
+      invoke("unwatch_directory", { path: item.path }).catch(() => {});
+    };
+  }, [isExpanded, hasLoaded, item.path, refreshChildren]);
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
