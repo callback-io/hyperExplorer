@@ -4,6 +4,7 @@
  */
 import { useCallback, useMemo } from "react";
 import { useTabsContext } from "@/hooks/useTabsContext";
+import { useRecentPaths } from "@/stores/recentPaths";
 
 /**
  * useTabs
@@ -11,6 +12,7 @@ import { useTabsContext } from "@/hooks/useTabsContext";
  */
 export function useTabs() {
   const { state, dispatch, activeTab } = useTabsContext();
+  const addRecent = useRecentPaths((s) => s.addRecent);
 
   /** 初始化 Tabs */
   const initTabs = useCallback(
@@ -80,8 +82,9 @@ export function useTabs() {
   const navigate = useCallback(
     (path: string, selectFile?: string) => {
       dispatch({ type: "NAVIGATE", payload: { path, selectFile } });
+      addRecent(path);
     },
-    [dispatch]
+    [dispatch, addRecent]
   );
 
   /** 后退 */

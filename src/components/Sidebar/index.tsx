@@ -22,6 +22,7 @@ import { SmartIcon } from "@/components/SmartIcon";
 
 import { FileEntry, FolderItem, SidebarItemActions } from "@/types";
 import { useFavorites } from "@/stores/favorites";
+import { useRecentPaths } from "@/stores/recentPaths";
 
 /** 侧边栏目录拖拽放入处理 */
 function makeSidebarDropHandlers(targetPath: string) {
@@ -288,6 +289,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [home, setHome] = useState<string>("");
   const { favorites, removeFavorite } = useFavorites();
+  const recentPaths = useRecentPaths((s) => s.recentPaths);
 
   useEffect(() => {
     invoke<string>("get_home_dir").then(setHome).catch(console.error);
@@ -408,6 +410,30 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 </button>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* 最近访问 */}
+      {recentPaths.length > 0 && (
+        <div className="border-border/50 max-h-40 overflow-y-auto border-b p-3">
+          <h3 className="text-muted-foreground mb-2 px-2 text-xs font-medium">
+            {t("sidebar.recent")}
+          </h3>
+          <div className="space-y-0.5">
+            {recentPaths.slice(0, 8).map((recentPath) => {
+              const name = recentPath.split("/").pop() || recentPath;
+              return (
+                <button
+                  key={recentPath}
+                  className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors"
+                  onClick={() => onNavigate(recentPath)}
+                >
+                  <Folder className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{name}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
