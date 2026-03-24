@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   List as ListIcon,
   Columns,
+  GalleryHorizontalEnd,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AppContextMenu } from "@/components/AppContextMenu";
@@ -348,6 +349,17 @@ export function TopBar() {
           title={t("common.view_column")}
         >
           <Columns className="h-4 w-4" />
+        </button>
+        <button
+          className={`rounded-sm p-1 transition-colors ${
+            viewMode === "gallery"
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setViewMode("gallery")}
+          title={t("common.view_gallery")}
+        >
+          <GalleryHorizontalEnd className="h-4 w-4" />
         </button>
       </div>
 
