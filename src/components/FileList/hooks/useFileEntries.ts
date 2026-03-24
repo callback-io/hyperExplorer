@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import { FileEntry } from "@/types";
 import { SMART_FOLDER_PREFIX, DIR_CHANGE_DEBOUNCE_MS } from "@/constants/config";
 import { getCachedEntries, setCachedEntries, invalidateCache } from "@/lib/entriesCache";
+import { useSetting } from "@/hooks/useSetting";
 
 interface UseFileEntriesResult {
   entries: FileEntry[];
@@ -17,6 +18,7 @@ export function useFileEntries(currentPath: string): UseFileEntriesResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showHidden] = useSetting<boolean>("showHidden", false);
 
   // 加载目录内容
   const loadEntries = useCallback(
@@ -29,10 +31,12 @@ export function useFileEntries(currentPath: string): UseFileEntriesResult {
           const category = currentPath.replace(SMART_FOLDER_PREFIX, "");
           result = await invoke<FileEntry[]>("get_smart_files", { category });
         } else {
-          result = await invoke<FileEntry[]>("get_entries", { path: currentPath });
+          result = await invoke<FileEntry[]>("get_entries", {
+            path: currentPath,
+            showHidden: showHidden ?? false,
+          });
         }
         setEntries(result);
-        // 缓存结果
         setCachedEntries(currentPath, result);
       } catch (e) {
         setError(String(e));
@@ -40,7 +44,7 @@ export function useFileEntries(currentPath: string): UseFileEntriesResult {
         if (showLoading) setLoading(false);
       }
     },
-    [currentPath]
+    [currentPath, showHidden]
   );
 
   // 组件卸载时清除防抖

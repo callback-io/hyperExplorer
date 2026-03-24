@@ -15,6 +15,8 @@
     "terminal": "默认终端",
     "terminal_desc": "选择用于\"在终端打开\"功能的终端模拟器。",
     "terminal_default": "系统默认",
+    "show_hidden": "显示隐藏文件",
+    "show_hidden_desc": "显示以点(.)开头的文件和文件夹",
     "restart_required": "语言已更改",
     "restart_required_message": "菜单栏语言将在重启应用后更新。"
   },

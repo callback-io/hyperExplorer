@@ -90,23 +90,29 @@ pub struct FileEntry {
 }
 
 #[tauri::command]
-pub fn get_entries(path: String) -> Result<Vec<FileEntry>, String> {
-    // 先检查缓存
-    if let Some(cached) = crate::cache::get_dir_cache(&path) {
+pub fn get_entries(path: String, show_hidden: Option<bool>) -> Result<Vec<FileEntry>, String> {
+    let show = show_hidden.unwrap_or(false);
+
+    // 缓存 key 区分是否显示隐藏文件
+    let cache_key = if show {
+        format!("{}:hidden", path)
+    } else {
+        path.clone()
+    };
+
+    if let Some(cached) = crate::cache::get_dir_cache(&cache_key) {
         return Ok(cached);
     }
 
-    // 缓存未命中，执行实际加载
-    let entries = load_directory_entries(&path)?;
+    let entries = load_directory_entries(&path, show)?;
 
-    // 存入缓存
-    crate::cache::set_dir_cache(path, entries.clone());
+    crate::cache::set_dir_cache(cache_key, entries.clone());
 
     Ok(entries)
 }
 
 /// 实际加载目录内容（内部使用）
-fn load_directory_entries(path: &str) -> Result<Vec<FileEntry>, String> {
+fn load_directory_entries(path: &str, show_hidden: bool) -> Result<Vec<FileEntry>, String> {
     let dir_path = Path::new(path);
 
     if !dir_path.exists() {
@@ -126,8 +132,8 @@ fn load_directory_entries(path: &str) -> Result<Vec<FileEntry>, String> {
 
                 let name = entry.file_name().to_string_lossy().to_string();
 
-                // Skip hidden files (starting with .)
-                if name.starts_with('.') {
+                // Skip hidden files (starting with .) unless show_hidden is true
+                if !show_hidden && name.starts_with('.') {
                     continue;
                 }
 

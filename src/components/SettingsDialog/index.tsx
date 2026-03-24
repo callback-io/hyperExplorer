@@ -113,6 +113,7 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
   // 使用 useSetting 自动管理状态同步
   const [theme, setTheme] = useSetting<"light" | "dark" | "system">("theme", "system");
   const [storedLanguage, setStoredLanguage] = useSetting<string | null>("language", null);
+  const [showHidden, setShowHidden] = useSetting<boolean>("showHidden", false);
   const [defaultTerminal, setDefaultTerminal] = useSetting<string>(
     "default_terminal",
     "com.apple.Terminal"
@@ -428,6 +429,34 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
                         })),
                       ]}
                     />
+                  </div>
+
+                  {/* 显示隐藏文件 */}
+                  <div className="bg-card/50 rounded-lg border p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <label className="flex items-center gap-2 text-sm font-medium">
+                          {t("settings.general.show_hidden")}
+                        </label>
+                        <p className="text-muted-foreground text-xs">
+                          {t("settings.general.show_hidden_desc")}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowHidden(!showHidden)}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",
+                          showHidden ? "bg-primary" : "bg-muted"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "pointer-events-none inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow-sm transition-transform",
+                            showHidden ? "translate-x-5" : "translate-x-0.5"
+                          )}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
