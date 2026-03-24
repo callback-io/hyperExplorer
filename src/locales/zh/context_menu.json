@@ -24,5 +24,6 @@
   "add_favorite": "添加到收藏",
   "remove_favorite": "从收藏移除",
   "compress": "压缩为 ZIP",
-  "extract": "解压到此处"
+  "extract": "解压到此处",
+  "tags": "标签"
 }

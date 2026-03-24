@@ -4,6 +4,9 @@ import {
   ContextMenuContent,
   ContextMenuLabel,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
 import { useClipboard } from "@/stores/clipboard";
 import { FileEntry, FileActions } from "@/types";
@@ -25,6 +28,7 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { useFavorites } from "@/stores/favorites";
+import { useFileTags, TAG_COLORS } from "@/stores/fileTags";
 
 interface FileMenuContentProps {
   entry: FileEntry;
@@ -36,6 +40,7 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
   const { t } = useTranslation();
   const clipboard = useClipboard();
   const favorites = useFavorites();
+  const fileTags = useFileTags();
 
   // 如果右键的文件在多选中，操作多选集合；否则只操作右键的文件
   const targets =
@@ -159,6 +164,32 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
           }}
         />
       )}
+
+      {/* 颜色标签 */}
+      <ContextMenuSub>
+        <ContextMenuSubTrigger className="flex items-center gap-2">
+          <span className="inline-block h-3 w-3 rounded-full border border-current" />
+          {t("context_menu.tags")}
+        </ContextMenuSubTrigger>
+        <ContextMenuSubContent className="flex gap-1.5 p-2">
+          {TAG_COLORS.map((tc) => (
+            <button
+              key={tc.name}
+              className={`h-5 w-5 rounded-full transition-transform hover:scale-125 ${
+                fileTags.getTag(entry.path) === tc.name ? "ring-2 ring-offset-1" : ""
+              }`}
+              style={{ backgroundColor: tc.color }}
+              onClick={() => {
+                if (fileTags.getTag(entry.path) === tc.name) {
+                  fileTags.removeTag(entry.path);
+                } else {
+                  fileTags.setTag(entry.path, tc.name);
+                }
+              }}
+            />
+          ))}
+        </ContextMenuSubContent>
+      </ContextMenuSub>
 
       <ContextMenuSeparator />
 

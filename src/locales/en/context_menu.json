@@ -24,5 +24,6 @@
   "add_favorite": "Add to Favorites",
   "remove_favorite": "Remove from Favorites",
   "compress": "Compress to ZIP",
-  "extract": "Extract Here"
+  "extract": "Extract Here",
+  "tags": "Tags"
 }

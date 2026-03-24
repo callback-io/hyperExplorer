@@ -3,6 +3,7 @@ import { Folder, File } from "lucide-react";
 import { FileEntry } from "@/types";
 import { SmartIcon } from "@/components/SmartIcon";
 import { Input } from "@/components/ui/input";
+import { useFileTags, TAG_COLORS } from "@/stores/fileTags";
 import { formatFileSize, formatDate } from "@/utils/format";
 
 interface FileListItemProps {
@@ -29,6 +30,9 @@ export const FileListItem = memo(function FileListItem({
   onClick,
   onDoubleClick,
 }: FileListItemProps) {
+  const tag = useFileTags((s) => s.getTag(entry.path));
+  const tagColor = tag ? TAG_COLORS.find((t) => t.name === tag)?.color : undefined;
+
   return (
     <div
       className={`hover:bg-accent focus:bg-accent flex w-full cursor-default items-center rounded-md p-2 text-sm transition-colors ${
@@ -66,9 +70,15 @@ export const FileListItem = memo(function FileListItem({
             className="h-6 border-blue-400 bg-white/90 px-2 py-0.5 shadow-sm focus-visible:border-blue-500 focus-visible:ring-1 focus-visible:ring-blue-400/50 focus-visible:ring-offset-0 dark:bg-gray-800/90"
           />
         ) : (
-          <span className="truncate">
+          <span className="flex items-center gap-1.5 truncate">
             {entry.name}
-            {entry.is_symlink && <span className="text-muted-foreground ml-1 text-xs">→</span>}
+            {entry.is_symlink && <span className="text-muted-foreground text-xs">→</span>}
+            {tagColor && (
+              <span
+                className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: tagColor }}
+              />
+            )}
           </span>
         )}
       </div>
