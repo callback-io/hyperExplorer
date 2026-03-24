@@ -365,6 +365,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_drag::init())
         .manage(Mutex::new(WatcherState::new()))
         .manage(shared_index.clone())
         .manage(shared_database.clone())

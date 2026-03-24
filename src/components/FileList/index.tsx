@@ -12,6 +12,7 @@ import { useFileSort } from "./hooks/useFileSort";
 import { useFileSelection } from "./hooks/useFileSelection";
 import { useFileOperations } from "./hooks/useFileOperations";
 import { useFileKeyboardShortcuts } from "./hooks/useFileKeyboardShortcuts";
+import { startDrag } from "@crabnebula/tauri-plugin-drag";
 import { useFileEntries } from "./hooks/useFileEntries";
 import { useFileRename } from "./hooks/useFileRename";
 import { useQuickLook } from "./hooks/useQuickLook";
@@ -46,8 +47,13 @@ function makeDragHandlers(
 ) {
   return {
     onDragStart: (e: React.DragEvent) => {
+      // 内部拖拽数据（用于 app 内文件移动）
       e.dataTransfer.setData("application/json", JSON.stringify({ path: entry.path }));
       e.dataTransfer.effectAllowed = "move";
+      // 原生拖拽（支持拖到外部应用如 Finder、邮件等）
+      startDrag({ item: [entry.path], icon: "" }).catch(() => {
+        // 静默失败 — 内部拖拽仍然工作
+      });
     },
     onDragOver: (e: React.DragEvent) => {
       if (!entry.is_dir) return;
