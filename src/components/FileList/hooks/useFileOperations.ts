@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { FileEntry } from "@/types";
 import { useClipboard } from "@/stores/clipboard";
+import { useUndoStack } from "@/stores/undoStack";
 import { openWithService } from "@/lib/openWith";
 
 interface UseFileOperationsOptions {
@@ -20,6 +21,7 @@ export function useFileOperations({
 }: UseFileOperationsOptions) {
   const { t } = useTranslation();
   const clipboard = useClipboard();
+  const undoStack = useUndoStack();
 
   const handleOpen = useCallback(
     (entry: FileEntry) => {
@@ -57,9 +59,11 @@ export function useFileOperations({
     for (const src of clipboard.paths) {
       try {
         if (clipboard.operation === "copy") {
-          await invoke("copy_file", { src, destDir: currentPath });
+          const resultPath = await invoke<string>("copy_file", { src, destDir: currentPath });
+          undoStack.push({ type: "copy", resultPath });
         } else if (clipboard.operation === "cut") {
-          await invoke("move_file", { src, destDir: currentPath });
+          const resultPath = await invoke<string>("move_file", { src, destDir: currentPath });
+          undoStack.push({ type: "move", srcPath: src, destDir: currentPath, resultPath });
         }
         successCount++;
       } catch (e) {
@@ -79,7 +83,7 @@ export function useFileOperations({
         })
       );
     }
-  }, [clipboard, currentPath, onRefresh, t]);
+  }, [clipboard, currentPath, onRefresh, t, undoStack]);
 
   const handleDelete = useCallback(
     async (entries: FileEntry[]) => {
@@ -156,14 +160,18 @@ export function useFileOperations({
     handleMove: useCallback(
       async (sourcePath: string, targetPath: string) => {
         try {
-          await invoke("move_file", { src: sourcePath, destDir: targetPath });
+          const resultPath = await invoke<string>("move_file", {
+            src: sourcePath,
+            destDir: targetPath,
+          });
+          undoStack.push({ type: "move", srcPath: sourcePath, destDir: targetPath, resultPath });
           onRefresh();
         } catch (e) {
           console.error("Failed to move file:", e);
           alert(t("file_list.error_rename", { error: String(e) })); // Reusing rename error for simplicity or add generic error
         }
       },
-      [onRefresh, t]
+      [onRefresh, t, undoStack]
     ),
   };
 }

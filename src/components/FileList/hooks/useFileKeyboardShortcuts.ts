@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { FileEntry } from "@/types";
 import { useClipboard } from "@/stores/clipboard";
+import { useUndoStack } from "@/stores/undoStack";
 
 interface UseFileKeyboardShortcutsOptions {
   editingPath: string | null;
@@ -24,14 +25,17 @@ interface UseFileKeyboardShortcutsOptions {
 
 export function useFileKeyboardShortcuts(options: UseFileKeyboardShortcutsOptions) {
   const clipboard = useClipboard();
+  const undoStack = useUndoStack();
 
   // 使用 ref 存储最新的 options，避免频繁重注册事件监听器
   const optionsRef = useRef(options);
   const clipboardRef = useRef(clipboard);
+  const undoRef = useRef(undoStack);
 
   useEffect(() => {
     optionsRef.current = options;
     clipboardRef.current = clipboard;
+    undoRef.current = undoStack;
   });
 
   useEffect(() => {
@@ -66,6 +70,11 @@ export function useFileKeyboardShortcuts(options: UseFileKeyboardShortcutsOption
       if (e.key === "Escape") {
         e.preventDefault();
         clearSelection();
+      }
+      // Cmd+Z 撤销
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undoRef.current.undo();
       }
       // Cmd+Option+N 新建文件（使用 e.code 因为 macOS Option 会改变 e.key 的值）
       if ((e.metaKey || e.ctrlKey) && e.code === "KeyN" && !e.shiftKey && e.altKey) {

@@ -2,6 +2,7 @@ import { useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 import { FileEntry } from "@/types";
+import { useUndoStack } from "@/stores/undoStack";
 
 interface UseFileRenameOptions {
   entries: FileEntry[];
@@ -31,6 +32,7 @@ export function useFileRename({
   onRefresh,
 }: UseFileRenameOptions): UseFileRenameResult {
   const { t } = useTranslation();
+  const undoStack = useUndoStack();
 
   // 开始重命名
   const handleStartRename = useCallback(
@@ -64,6 +66,12 @@ export function useFileRename({
 
     try {
       await invoke("rename", { path: editingPath, newName: editValue });
+      const parentDir = editingPath.substring(0, editingPath.lastIndexOf("/"));
+      undoStack.push({
+        type: "rename",
+        oldPath: editingPath,
+        newPath: `${parentDir}/${editValue}`,
+      });
       onRefresh();
     } catch (e) {
       console.error("Failed to rename:", e);
@@ -71,7 +79,7 @@ export function useFileRename({
     } finally {
       handleCancelRename();
     }
-  }, [editingPath, editValue, entries, handleCancelRename, onRefresh, t]);
+  }, [editingPath, editValue, entries, handleCancelRename, onRefresh, t, undoStack]);
 
   // 注册重命名快捷键 (Enter)
   useEffect(() => {
