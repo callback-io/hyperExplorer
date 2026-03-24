@@ -272,29 +272,48 @@ pub fn create_shared_index() -> SharedIndex {
     Arc::new(RwLock::new(FileIndex::new()))
 }
 
-/// 启动后台索引监听器
-pub fn start_index_watcher(index: SharedIndex, root: String) {
+/// 启动后台索引监听器（支持优雅关闭）
+pub fn start_index_watcher(
+    index: SharedIndex,
+    root: String,
+    stop_rx: std::sync::mpsc::Receiver<()>,
+) {
     thread::spawn(move || {
         let (tx, rx) = std::sync::mpsc::channel();
 
-        let mut watcher =
-            RecommendedWatcher::new(move |res| { let _ = tx.send(res); }, Config::default())
-                .expect("Failed to create watcher");
+        let mut watcher = RecommendedWatcher::new(
+            move |res| {
+                let _ = tx.send(res);
+            },
+            Config::default(),
+        )
+        .expect("Failed to create watcher");
 
         if let Err(e) = watcher.watch(std::path::Path::new(&root), RecursiveMode::Recursive) {
             eprintln!("Failed to watch root for index: {:?}", e);
             return;
         }
 
-        // 保持 watcher 存活，目前通过不断循环接收消息来实现
-        // 注意：这里的 watcher 会被 move 进线程，线程结束前 watcher 一直有效
+        loop {
+            // 检查停止信号（非阻塞）
+            if stop_rx.try_recv().is_ok() {
+                println!("Index watcher received stop signal, shutting down");
+                break;
+            }
 
-        for res in rx {
-            match res {
-                Ok(event) => {
+            // 非阻塞接收 fs 事件（超时 500ms）
+            match rx.recv_timeout(std::time::Duration::from_millis(500)) {
+                Ok(Ok(event)) => {
                     handle_event(&index, event);
                 }
-                Err(e) => eprintln!("Index watcher error: {:?}", e),
+                Ok(Err(e)) => eprintln!("Index watcher error: {:?}", e),
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                    // 正常超时，继续循环检查 stop 信号
+                }
+                Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                    println!("Index watcher channel disconnected, exiting");
+                    break;
+                }
             }
         }
     });

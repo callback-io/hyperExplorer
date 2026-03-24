@@ -117,8 +117,16 @@ fn get_index_status(index: tauri::State<'_, SharedIndex>) -> IndexStatus {
     }
 }
 
+/// Watcher 停止信号发送端（用于优雅关闭）
+pub type WatcherStopSenders = Arc<Mutex<Vec<std::sync::mpsc::Sender<()>>>>;
+
 /// 后台构建索引（优先使用 SQLite，回退到内存索引）
-fn build_index_background(app: AppHandle, index: SharedIndex, database: Option<SharedDatabase>) {
+fn build_index_background(
+    app: AppHandle,
+    index: SharedIndex,
+    database: Option<SharedDatabase>,
+    stop_senders: WatcherStopSenders,
+) {
     tauri::async_runtime::spawn_blocking(move || {
         // 获取用户主目录
         if let Some(home) = dirs::home_dir() {
@@ -148,7 +156,11 @@ fn build_index_background(app: AppHandle, index: SharedIndex, database: Option<S
                     let _ = app.emit("index-status", "ready");
 
                     // 启动增量监听
-                    start_sqlite_watcher(db.clone(), home_str);
+                    let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+                    if let Ok(mut senders) = stop_senders.lock() {
+                        senders.push(stop_tx);
+                    }
+                    start_sqlite_watcher(db.clone(), home_str, stop_rx);
                     return;
                 }
             }
@@ -175,16 +187,28 @@ fn build_index_background(app: AppHandle, index: SharedIndex, database: Option<S
                         }
 
                         // 启动增量监听
-                        start_sqlite_watcher(db.clone(), home_str);
+                        let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+                        if let Ok(mut senders) = stop_senders.lock() {
+                            senders.push(stop_tx);
+                        }
+                        start_sqlite_watcher(db.clone(), home_str, stop_rx);
                     }
                     Err(e) => {
                         eprintln!("SQLite index build failed: {}, falling back to memory", e);
-                        fallback_to_memory_index(&app, &index, &home_str);
+                        let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+                        if let Ok(mut senders) = stop_senders.lock() {
+                            senders.push(stop_tx);
+                        }
+                        fallback_to_memory_index(&app, &index, &home_str, stop_rx);
                     }
                 }
             } else {
                 // 无 SQLite，使用内存索引
-                fallback_to_memory_index(&app, &index, &home_str);
+                let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+                if let Ok(mut senders) = stop_senders.lock() {
+                    senders.push(stop_tx);
+                }
+                fallback_to_memory_index(&app, &index, &home_str, stop_rx);
             }
 
             let _ = app.emit("index-status", "ready");
@@ -193,9 +217,14 @@ fn build_index_background(app: AppHandle, index: SharedIndex, database: Option<S
 }
 
 /// 回退到内存索引
-fn fallback_to_memory_index(app: &AppHandle, index: &SharedIndex, home_str: &str) {
+fn fallback_to_memory_index(
+    app: &AppHandle,
+    index: &SharedIndex,
+    home_str: &str,
+    stop_rx: std::sync::mpsc::Receiver<()>,
+) {
     println!("Starting background index watcher...");
-    index::start_index_watcher(index.clone(), home_str.to_string());
+    index::start_index_watcher(index.clone(), home_str.to_string(), stop_rx);
 
     let (files, name_index) = index::FileIndex::scan(home_str, Some(app));
     let count = files.len();
@@ -206,8 +235,12 @@ fn fallback_to_memory_index(app: &AppHandle, index: &SharedIndex, home_str: &str
     }
 }
 
-/// 启动 SQLite 增量监听器
-fn start_sqlite_watcher(db: SharedDatabase, root: String) {
+/// 启动 SQLite 增量监听器（支持优雅关闭）
+fn start_sqlite_watcher(
+    db: SharedDatabase,
+    root: String,
+    stop_rx: std::sync::mpsc::Receiver<()>,
+) {
     use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 
     std::thread::spawn(move || {
@@ -237,9 +270,14 @@ fn start_sqlite_watcher(db: SharedDatabase, root: String) {
             false
         };
 
-        for res in rx {
-            match res {
-                Ok(event) => match event.kind {
+        loop {
+            if stop_rx.try_recv().is_ok() {
+                println!("SQLite watcher received stop signal, shutting down");
+                break;
+            }
+
+            match rx.recv_timeout(std::time::Duration::from_millis(500)) {
+                Ok(Ok(event)) => match event.kind {
                     EventKind::Create(_) => {
                         for path in event.paths {
                             if should_ignore(&path) {
@@ -268,7 +306,12 @@ fn start_sqlite_watcher(db: SharedDatabase, root: String) {
                     }
                     _ => {}
                 },
-                Err(e) => eprintln!("SQLite watcher error: {:?}", e),
+                Ok(Err(e)) => eprintln!("SQLite watcher error: {:?}", e),
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
+                Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                    println!("SQLite watcher channel disconnected, exiting");
+                    break;
+                }
             }
         }
     });
@@ -292,6 +335,10 @@ pub fn run() {
             None
         }
     };
+
+    // Watcher 停止信号管理
+    let stop_senders: WatcherStopSenders = Arc::new(Mutex::new(Vec::new()));
+    let stop_senders_for_exit = stop_senders.clone();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -325,6 +372,7 @@ pub fn run() {
                 app.handle().clone(),
                 shared_index.clone(),
                 shared_database.clone(),
+                stop_senders.clone(),
             );
 
             Ok(())
@@ -409,6 +457,16 @@ pub fn run() {
             read_image_base64,
             batch_rename
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(move |_app_handle, event| {
+            if let tauri::RunEvent::Exit = event {
+                println!("Application exiting, stopping watchers...");
+                if let Ok(senders) = stop_senders_for_exit.lock() {
+                    for sender in senders.iter() {
+                        let _ = sender.send(());
+                    }
+                }
+            }
+        });
 }
