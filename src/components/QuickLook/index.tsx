@@ -1,6 +1,30 @@
 import { useEffect, useState, useMemo } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { marked } from "marked";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import rust from "highlight.js/lib/languages/rust";
+import json from "highlight.js/lib/languages/json";
+import css from "highlight.js/lib/languages/css";
+import xml from "highlight.js/lib/languages/xml";
+import bash from "highlight.js/lib/languages/bash";
+import yaml from "highlight.js/lib/languages/yaml";
+import sql from "highlight.js/lib/languages/sql";
+import "highlight.js/styles/github-dark.css";
+
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("python", python);
+hljs.registerLanguage("rust", rust);
+hljs.registerLanguage("json", json);
+hljs.registerLanguage("css", css);
+hljs.registerLanguage("xml", xml);
+hljs.registerLanguage("html", xml);
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("yaml", yaml);
+hljs.registerLanguage("sql", sql);
 import { useTranslation } from "react-i18next";
 import { X, ExternalLink, Folder, File, Loader2 } from "lucide-react";
 import { SmartIcon } from "@/components/SmartIcon";
@@ -234,11 +258,40 @@ export function QuickLook({ entry, onClose }: QuickLookProps) {
         );
 
       case "text":
-        return textContent !== null ? (
-          <div className="bg-muted/30 h-full w-full overflow-auto rounded-md border p-4 shadow-inner">
-            <pre className="font-mono text-xs break-words whitespace-pre-wrap">{textContent}</pre>
-          </div>
-        ) : null;
+        if (textContent === null) return null;
+        // Markdown 渲染
+        if (entry?.extension?.toLowerCase() === "md") {
+          const html = marked.parse(textContent) as string;
+          return (
+            <div className="bg-muted/30 h-full w-full overflow-auto rounded-md border p-4 shadow-inner">
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+            </div>
+          );
+        }
+        // 代码高亮
+        {
+          const ext = entry?.extension?.toLowerCase() || "";
+          const lang = hljs.getLanguage(ext) ? ext : undefined;
+          const highlighted = lang
+            ? hljs.highlight(textContent, { language: lang }).value
+            : undefined;
+          return (
+            <div className="bg-muted/30 h-full w-full overflow-auto rounded-md border p-4 shadow-inner">
+              {highlighted ? (
+                <pre className="font-mono text-xs">
+                  <code dangerouslySetInnerHTML={{ __html: highlighted }} />
+                </pre>
+              ) : (
+                <pre className="font-mono text-xs break-words whitespace-pre-wrap">
+                  {textContent}
+                </pre>
+              )}
+            </div>
+          );
+        }
 
       case "icon":
       default:
