@@ -22,5 +22,7 @@
   "batch_rename": "批量重命名...",
   "get_info": "显示简介",
   "add_favorite": "添加到收藏",
-  "remove_favorite": "从收藏移除"
+  "remove_favorite": "从收藏移除",
+  "compress": "压缩为 ZIP",
+  "extract": "解压到此处"
 }

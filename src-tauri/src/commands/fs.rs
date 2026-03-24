@@ -335,6 +335,91 @@ pub fn exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+/// 压缩文件/文件夹为 zip
+#[tauri::command]
+pub fn compress_to_zip(paths: Vec<String>) -> Result<String, String> {
+    if paths.is_empty() {
+        return Err("No paths provided".to_string());
+    }
+
+    // 确定输出文件名
+    let first = Path::new(&paths[0]);
+    let parent = first.parent().ok_or("Invalid path")?;
+    let zip_name = if paths.len() == 1 {
+        let stem = first.file_stem().unwrap_or_default().to_string_lossy();
+        format!("{}.zip", stem)
+    } else {
+        "Archive.zip".to_string()
+    };
+    let zip_path = path_utils::get_unique_path(&parent.join(&zip_name));
+
+    // 使用 macOS ditto 命令压缩（保留 macOS 元数据）
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let zip_path_str = zip_path.to_string_lossy().to_string();
+        let mut args: Vec<String> = vec![
+            "-c".to_string(),
+            "-k".to_string(),
+            "--sequesterRsrc".to_string(),
+            "--keepParent".to_string(),
+        ];
+        args.extend(paths.iter().cloned());
+        args.push(zip_path_str);
+
+        let output = Command::new("/usr/bin/ditto")
+            .args(&args)
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Compression failed: {}", stderr));
+        }
+    }
+
+    // 清除父目录缓存
+    crate::cache::invalidate_dir_cache(&parent.to_string_lossy());
+
+    Ok(zip_path.to_string_lossy().to_string())
+}
+
+/// 解压 zip 文件
+#[tauri::command]
+pub fn extract_zip(path: String, dest_dir: Option<String>) -> Result<String, String> {
+    let zip_path = Path::new(&path);
+    if !zip_path.exists() {
+        return Err("File does not exist".to_string());
+    }
+
+    let parent = zip_path.parent().ok_or("Invalid path")?;
+    let dest = match dest_dir {
+        Some(d) => std::path::PathBuf::from(d),
+        None => {
+            let stem = zip_path.file_stem().unwrap_or_default().to_string_lossy();
+            path_utils::get_unique_path(&parent.join(&*stem))
+        }
+    };
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let output = Command::new("/usr/bin/ditto")
+            .args(["-x", "-k", &path, &dest.to_string_lossy()])
+            .output()
+            .map_err(|e| e.to_string())?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Extraction failed: {}", stderr));
+        }
+    }
+
+    crate::cache::invalidate_dir_cache(&parent.to_string_lossy());
+
+    Ok(dest.to_string_lossy().to_string())
+}
+
 /// 获取文件/文件夹详细信息
 #[derive(Debug, Serialize)]
 pub struct FileInfo {

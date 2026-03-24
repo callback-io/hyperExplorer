@@ -301,6 +301,23 @@ export function FileList({ currentPath, onNavigate, fileToSelect }: FileListProp
     onGetInfo: (entry: FileEntry) => {
       setFileInfoEntry(entry);
     },
+    onCompress: async (entries: FileEntry[]) => {
+      try {
+        const paths = entries.map((e) => e.path);
+        await invoke("compress_to_zip", { paths });
+        loadEntries(false);
+      } catch (e) {
+        alert(String(e));
+      }
+    },
+    onExtract: async (entry: FileEntry) => {
+      try {
+        await invoke("extract_zip", { path: entry.path });
+        loadEntries(false);
+      } catch (e) {
+        alert(String(e));
+      }
+    },
     currentPath,
   };
 

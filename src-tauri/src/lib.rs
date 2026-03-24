@@ -13,10 +13,10 @@ use commands::apps::{
     get_terminal_apps, open_in_terminal_with, open_with,
 };
 use commands::fs::{
-    batch_rename, check_full_disk_access, copy_file, create_directory, create_file,
-    delete_to_trash, exists, get_disk_free, get_entries, get_file_info, get_home_dir,
-    get_parent_dir, move_file, open_file, open_in_terminal, open_url, read_image_base64,
-    read_text_file, rename,
+    batch_rename, check_full_disk_access, compress_to_zip, copy_file, create_directory,
+    create_file, delete_to_trash, exists, extract_zip, get_disk_free, get_entries, get_file_info,
+    get_home_dir, get_parent_dir, move_file, open_file, open_in_terminal, open_url,
+    read_image_base64, read_text_file, rename,
 };
 use commands::search::{get_smart_files, search_files};
 use commands::watcher::{stop_watching, unwatch_directory, watch_directory, WatcherState};
@@ -477,7 +477,9 @@ pub fn run() {
             read_image_base64,
             batch_rename,
             get_disk_free,
-            get_file_info
+            get_file_info,
+            compress_to_zip,
+            extract_zip
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

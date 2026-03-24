@@ -21,6 +21,8 @@ import {
   Trash2,
   Info,
   Star,
+  Archive,
+  PackageOpen,
 } from "lucide-react";
 import { useFavorites } from "@/stores/favorites";
 
@@ -155,6 +157,24 @@ export function FileMenuContent({ entry, selectedEntries, actions }: FileMenuCon
               favorites.addFavorite({ name: entry.name, path: entry.path });
             }
           }}
+        />
+      )}
+
+      <ContextMenuSeparator />
+
+      {actions.onCompress && (
+        <MenuItem
+          fallbackIcon={Archive}
+          label={t("context_menu.compress")}
+          onClick={() => actions.onCompress?.(targets)}
+        />
+      )}
+
+      {actions.onExtract && entry.extension?.toLowerCase() === "zip" && (
+        <MenuItem
+          fallbackIcon={PackageOpen}
+          label={t("context_menu.extract")}
+          onClick={() => actions.onExtract?.(entry)}
         />
       )}
 
