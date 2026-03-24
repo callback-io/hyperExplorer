@@ -7,6 +7,7 @@ import { FileList } from "@/components/FileList";
 import { IndexingOverlay } from "@/components/IndexingOverlay";
 import { TabBar } from "@/components/TabBar";
 import { StatusBar } from "@/components/StatusBar";
+import { OperationProgress } from "@/components/OperationProgress";
 import { preloadIcon } from "@/lib/iconCache";
 import { settingsManager } from "@/lib/store";
 import { useSetting } from "@/hooks/useSetting";
@@ -268,6 +269,7 @@ function App() {
 
           {/* 状态栏 */}
           <StatusBar />
+          <OperationProgress />
         </>
       )}
     </div>

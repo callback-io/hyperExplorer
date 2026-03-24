@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FileEntry } from "@/types";
 import { useClipboard } from "@/stores/clipboard";
 import { useUndoStack } from "@/stores/undoStack";
+import { useOperationProgress } from "@/stores/operationProgress";
 import { openWithService } from "@/lib/openWith";
 
 interface UseFileOperationsOptions {
@@ -22,6 +23,7 @@ export function useFileOperations({
   const { t } = useTranslation();
   const clipboard = useClipboard();
   const undoStack = useUndoStack();
+  const progress = useOperationProgress();
 
   const handleOpen = useCallback(
     (entry: FileEntry) => {
@@ -55,6 +57,11 @@ export function useFileOperations({
 
     const errors: string[] = [];
     let successCount = 0;
+    const totalCount = clipboard.paths.length;
+
+    if (totalCount > 1) {
+      progress.start(clipboard.operation === "copy" ? "Copying..." : "Moving...", totalCount);
+    }
 
     for (const src of clipboard.paths) {
       try {
@@ -66,10 +73,14 @@ export function useFileOperations({
           undoStack.push({ type: "move", srcPath: src, destDir: currentPath, resultPath });
         }
         successCount++;
+        if (totalCount > 1) progress.update(successCount);
       } catch (e) {
         errors.push(String(e));
+        if (totalCount > 1) progress.update(successCount + errors.length);
       }
     }
+
+    if (totalCount > 1) progress.finish();
 
     if (clipboard.operation === "cut") {
       clipboard.clear();
@@ -83,21 +94,24 @@ export function useFileOperations({
         })
       );
     }
-  }, [clipboard, currentPath, onRefresh, t, undoStack]);
+  }, [clipboard, currentPath, onRefresh, t, undoStack, progress]);
 
   const handleDelete = useCallback(
     async (entries: FileEntry[]) => {
       try {
-        for (const entry of entries) {
-          await invoke("delete_to_trash", { path: entry.path });
+        if (entries.length > 1) progress.start("Deleting...", entries.length);
+        for (let i = 0; i < entries.length; i++) {
+          await invoke("delete_to_trash", { path: entries[i].path });
+          if (entries.length > 1) progress.update(i + 1);
         }
+        if (entries.length > 1) progress.finish();
         onRefresh();
       } catch (e) {
         console.error("Failed to delete:", e);
         alert(t("file_list.error_delete", { error: String(e) }));
       }
     },
-    [onRefresh, t]
+    [onRefresh, t, progress]
   );
 
   const handleCopyPath = useCallback(async (entry: FileEntry) => {
