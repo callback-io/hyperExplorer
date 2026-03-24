@@ -44,7 +44,7 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 sys-locale = "0.3.2"
 rust-i18n = "3.1.5"
 tauri-plugin-process = "2.3.1"
-tauri-plugin-updater = "2"
+tauri-plugin-updater = "2.10.0"
 libc = "0.2"
 sha2 = "0.10"
 tauri-plugin-drag = "2.1.0"
