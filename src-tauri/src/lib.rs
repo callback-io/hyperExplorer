@@ -14,9 +14,9 @@ use commands::apps::{
 };
 use commands::fs::{
     batch_rename, check_full_disk_access, compress_to_zip, copy_file, create_directory,
-    create_file, delete_to_trash, exists, extract_zip, get_disk_free, get_entries, get_file_info,
-    get_home_dir, get_parent_dir, move_file, open_file, open_in_terminal, open_url,
-    read_image_base64, read_text_file, rename,
+    create_file, delete_to_trash, exists, extract_zip, find_duplicates, get_disk_free,
+    get_entries, get_file_info, get_home_dir, get_parent_dir, move_file, open_file,
+    open_in_terminal, open_url, read_image_base64, read_text_file, rename,
 };
 use commands::search::{get_smart_files, search_files};
 use commands::watcher::{stop_watching, unwatch_directory, watch_directory, WatcherState};
@@ -479,7 +479,8 @@ pub fn run() {
             get_disk_free,
             get_file_info,
             compress_to_zip,
-            extract_zip
+            extract_zip,
+            find_duplicates
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

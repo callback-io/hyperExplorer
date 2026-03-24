@@ -335,6 +335,92 @@ pub fn exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+/// 扫描重复文件
+#[derive(Debug, Serialize)]
+pub struct DuplicateGroup {
+    pub hash: String,
+    pub size: u64,
+    pub paths: Vec<String>,
+}
+
+#[tauri::command]
+pub async fn find_duplicates(path: String) -> Result<Vec<DuplicateGroup>, String> {
+    tauri::async_runtime::spawn_blocking(move || scan_duplicates(&path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn scan_duplicates(root: &str) -> Result<Vec<DuplicateGroup>, String> {
+    use std::collections::HashMap;
+
+    // 第一遍：按文件大小分组
+    let mut size_groups: HashMap<u64, Vec<String>> = HashMap::new();
+    let walker = ignore::WalkBuilder::new(root)
+        .hidden(false)
+        .git_ignore(false)
+        .max_depth(Some(10))
+        .build();
+
+    for entry in walker.flatten() {
+        if let Ok(meta) = entry.metadata() {
+            if meta.is_file() && meta.len() > 0 {
+                size_groups
+                    .entry(meta.len())
+                    .or_default()
+                    .push(entry.path().to_string_lossy().to_string());
+            }
+        }
+    }
+
+    // 第二遍：只对大小相同的文件计算 hash
+    let mut hash_groups: HashMap<String, (u64, Vec<String>)> = HashMap::new();
+
+    for (size, paths) in size_groups {
+        if paths.len() < 2 {
+            continue;
+        }
+
+        for path_str in paths {
+            let hash = match file_hash(&path_str) {
+                Ok(h) => h,
+                Err(_) => continue,
+            };
+            hash_groups
+                .entry(hash)
+                .or_insert_with(|| (size, Vec::new()))
+                .1
+                .push(path_str);
+        }
+    }
+
+    // 只返回有重复的组
+    let mut results: Vec<DuplicateGroup> = hash_groups
+        .into_iter()
+        .filter(|(_, (_, paths))| paths.len() > 1)
+        .map(|(hash, (size, paths))| DuplicateGroup { hash, size, paths })
+        .collect();
+
+    results.sort_by(|a, b| b.size.cmp(&a.size));
+    Ok(results)
+}
+
+fn file_hash(path: &str) -> Result<String, std::io::Error> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+
+    let mut file = fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 8192];
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
+}
+
 /// 压缩文件/文件夹为 zip
 #[tauri::command]
 pub fn compress_to_zip(paths: Vec<String>) -> Result<String, String> {
