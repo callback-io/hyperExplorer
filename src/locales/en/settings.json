@@ -47,6 +47,11 @@
     "status_authorized": "Authorized",
     "status_denied": "Denied",
     "open_settings": "Open System Settings",
-    "full_disk_access_note": "Note: Changes may require an app restart to take effect."
+    "full_disk_access_note": "Note: Changes may require an app restart to take effect.",
+    "check_update": "Check for Updates",
+    "check_update_desc": "Check if a newer version is available.",
+    "update_available": "Version {{version}} is available. Download and install?",
+    "update_latest": "You are running the latest version.",
+    "update_error": "Failed to check for updates: {{error}}"
   }
 }

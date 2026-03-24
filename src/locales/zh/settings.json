@@ -47,6 +47,11 @@
     "status_authorized": "已授权",
     "status_denied": "未授权",
     "open_settings": "打开系统设置",
-    "full_disk_access_note": "注意：授权更改可能需要重启应用才能生效。"
+    "full_disk_access_note": "注意：授权更改可能需要重启应用才能生效。",
+    "check_update": "检查更新",
+    "check_update_desc": "检查是否有新版本可用。",
+    "update_available": "发现新版本 {{version}}，是否下载并安装？",
+    "update_latest": "当前已是最新版本。",
+    "update_error": "检查更新失败：{{error}}"
   }
 }

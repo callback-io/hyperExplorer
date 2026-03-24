@@ -16,6 +16,7 @@
     "core:window:allow-outer-size",
     "core:webview:allow-create-webview-window",
     "core:path:default",
-    "core:event:default"
+    "core:event:default",
+    "updater:default"
   ]
 }

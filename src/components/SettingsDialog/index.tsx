@@ -512,6 +512,47 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
                       </button>
                     </div>
                   </div>
+
+                  {/* 检查更新 */}
+                  <div className="bg-card/50 rounded-lg border p-4 shadow-sm">
+                    <div className="flex flex-row items-center justify-between">
+                      <div className="space-y-1">
+                        <h3 className="leading-none font-medium">
+                          {t("settings.advanced.check_update")}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          {t("settings.advanced.check_update_desc")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={async () => {
+                          try {
+                            const { check } = await import("@tauri-apps/plugin-updater");
+                            const update = await check();
+                            if (update) {
+                              const confirmed = window.confirm(
+                                t("settings.advanced.update_available", { version: update.version })
+                              );
+                              if (confirmed) {
+                                await update.downloadAndInstall();
+                                const { relaunch } = await import("@tauri-apps/plugin-process");
+                                await relaunch();
+                              }
+                            } else {
+                              alert(t("settings.advanced.update_latest"));
+                            }
+                          } catch (e) {
+                            alert(t("settings.advanced.update_error", { error: String(e) }));
+                          }
+                        }}
+                        className="flex items-center gap-2 rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+                      >
+                        {t("settings.advanced.check_update")}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
