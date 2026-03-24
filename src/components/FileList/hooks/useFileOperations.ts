@@ -104,18 +104,23 @@ export function useFileOperations({
     }
   }, []);
 
-  const handleNewFile = useCallback(async () => {
-    try {
-      const defaultName = t("file_list.untitled_file");
-      const newPath = await invoke<string>("create_file", {
-        path: `${currentPath}/${defaultName}`,
-      });
-      await onRefresh();
-      onStartRename(newPath, defaultName);
-    } catch (e) {
-      console.error("Failed to create file:", e);
-    }
-  }, [currentPath, onRefresh, onStartRename, t]);
+  const handleNewFile = useCallback(
+    async (ext?: string) => {
+      try {
+        const baseName = t("file_list.untitled_file");
+        const defaultName = ext ? `${baseName}.${ext}` : baseName;
+        const newPath = await invoke<string>("create_file", {
+          path: `${currentPath}/${defaultName}`,
+        });
+        await onRefresh();
+        const fileName = newPath.split("/").pop() || defaultName;
+        onStartRename(newPath, fileName);
+      } catch (e) {
+        console.error("Failed to create file:", e);
+      }
+    },
+    [currentPath, onRefresh, onStartRename, t]
+  );
 
   const handleNewFolder = useCallback(async () => {
     try {

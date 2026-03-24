@@ -81,7 +81,7 @@ export interface FileActions {
 export interface EmptyAreaActions {
   onPaste: () => void;
   onRefresh: () => void;
-  onNewFile: () => void;
+  onNewFile: (ext?: string) => void;
   onNewFolder: () => void;
   onOpenInTerminal: () => void;
   currentPath: string;

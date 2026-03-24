@@ -1,10 +1,16 @@
 import { useTranslation } from "react-i18next";
-import { ContextMenuContent, ContextMenuSeparator } from "@/components/ui/context-menu";
+import {
+  ContextMenuContent,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+} from "@/components/ui/context-menu";
 import { useClipboard } from "@/stores/clipboard";
 import { EmptyAreaActions } from "@/types";
 import { SYSTEM_PATHS, SF_SYMBOLS } from "@/constants/paths";
 import { MenuItem } from "../MenuItem";
-import { FileText, Folder, RefreshCw, Terminal } from "lucide-react";
+import { FileText, Folder, RefreshCw, Terminal, FileCode, File } from "lucide-react";
 
 interface EmptyAreaMenuContentProps {
   actions: EmptyAreaActions;
@@ -16,12 +22,34 @@ export function EmptyAreaMenuContent({ actions }: EmptyAreaMenuContentProps) {
 
   return (
     <ContextMenuContent className="w-48">
-      <MenuItem
-        sysIcon={{ type: "ext", value: "txt" }}
-        fallbackIcon={FileText}
-        label={t("context_menu.new_file")}
-        onClick={actions.onNewFile}
-      />
+      {/* 新建文件子菜单 */}
+      <ContextMenuSub>
+        <ContextMenuSubTrigger className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          {t("context_menu.new_file")}
+        </ContextMenuSubTrigger>
+        <ContextMenuSubContent className="w-44">
+          <MenuItem
+            sysIcon={{ type: "ext", value: "txt" }}
+            fallbackIcon={FileText}
+            label={t("context_menu.new_text_file")}
+            onClick={() => actions.onNewFile("txt")}
+          />
+          <MenuItem
+            sysIcon={{ type: "ext", value: "md" }}
+            fallbackIcon={FileCode}
+            label={t("context_menu.new_markdown_file")}
+            onClick={() => actions.onNewFile("md")}
+          />
+          <MenuItem
+            sysIcon={{ type: "ext", value: "" }}
+            fallbackIcon={File}
+            label={t("context_menu.new_empty_file")}
+            onClick={() => actions.onNewFile()}
+          />
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+
       <MenuItem
         sysIcon={{ type: "folder" }}
         fallbackIcon={Folder}
