@@ -36,6 +36,7 @@ export function TopBar() {
   // 搜索状态
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [useRegex, setUseRegex] = useState(false);
   const [ellipsisMode] = useState<EllipsisMode>("end");
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +75,12 @@ export function TopBar() {
     };
   }, [isEditing]);
 
+  // 正则模式 ref（避免 handleSearch 依赖 useRegex 导致重建）
+  const useRegexRef = useRef(useRegex);
+  useEffect(() => {
+    useRegexRef.current = useRegex;
+  });
+
   // 搜索（使用内存索引，极速响应）
   const handleSearch = useCallback(async (query: string, version: number) => {
     // 如果正在输入拼音，不要搜索
@@ -87,10 +94,10 @@ export function TopBar() {
     }
 
     try {
-      // 使用内存索引搜索，极速响应
       const response = await invoke<SearchResponse>("search_indexed", {
         query,
         limit: 50,
+        useRegex: useRegexRef.current,
       });
 
       // 只接受最新版本的结果
@@ -363,7 +370,23 @@ export function TopBar() {
         </button>
       </div>
 
-      {/* 搜索框 */}
+      {/* 正则切换 + 搜索框 */}
+      <button
+        className={`shrink-0 rounded-md px-1.5 py-1 font-mono text-xs transition-colors ${
+          useRegex ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"
+        }`}
+        onClick={() => {
+          setUseRegex((prev) => !prev);
+          // 切换后重新搜索当前查询
+          if (searchQuery) {
+            searchVersionRef.current++;
+            handleSearch(searchQuery, searchVersionRef.current);
+          }
+        }}
+        title={t("search.regex_toggle")}
+      >
+        .*
+      </button>
       <div className="relative w-64 shrink-0" ref={searchInputRef}>
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <AppContextMenu type="text-input" textInputActions={searchInputActions} asChild>

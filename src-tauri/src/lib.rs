@@ -45,10 +45,28 @@ async fn search_indexed(
     database: tauri::State<'_, Option<SharedDatabase>>,
     query: String,
     limit: Option<usize>,
+    use_regex: Option<bool>,
 ) -> Result<SearchResponse, String> {
     let limit_val = limit.unwrap_or(50);
+    let is_regex = use_regex.unwrap_or(false);
 
-    // 优先尝试 SQLite 搜索
+    // 正则模式：跳过 FTS5（不支持正则），直接用内存索引 regex 搜索
+    if is_regex {
+        let index = index.inner().clone();
+        let results = tauri::async_runtime::spawn_blocking(move || {
+            let index = match index.read() {
+                Ok(idx) => idx,
+                Err(_) => return vec![],
+            };
+            index.search_regex(&query, limit_val)
+        })
+        .await
+        .map_err(|e| e.to_string())?;
+
+        return Ok(SearchResponse { results });
+    }
+
+    // 普通模式：优先尝试 SQLite 搜索
     if let Some(ref db) = *database.inner() {
         let conn = db.connection();
         let search_engine = SearchEngine::new(conn);
@@ -78,7 +96,7 @@ async fn search_indexed(
         }
     }
 
-    // 回退到内存索引（阻塞等待，避免索引构建期间返回空结果）
+    // 回退到内存索引
     let index = index.inner().clone();
     let results = tauri::async_runtime::spawn_blocking(move || {
         let index = match index.read() {

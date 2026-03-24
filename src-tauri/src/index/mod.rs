@@ -177,6 +177,33 @@ impl FileIndex {
             .collect()
     }
 
+    /// 正则搜索索引（限制模式长度防止 ReDoS）
+    pub fn search_regex(&self, pattern: &str, limit: usize) -> Vec<IndexedFile> {
+        use rayon::prelude::*;
+        use regex::RegexBuilder;
+
+        if pattern.is_empty() || pattern.len() > 200 {
+            return vec![];
+        }
+
+        let regex = match RegexBuilder::new(pattern)
+            .case_insensitive(true)
+            .size_limit(1 << 20) // 1MB DFA 大小限制，防止复杂模式
+            .build()
+        {
+            Ok(r) => r,
+            Err(_) => return vec![], // 无效正则或过于复杂，返回空
+        };
+
+        self.name_index
+            .par_iter()
+            .filter(|(name_lower, _)| regex.is_match(name_lower))
+            .map(|(_, path)| path)
+            .filter_map(|path| self.files.get(path).cloned())
+            .take_any(limit)
+            .collect()
+    }
+
     /// 按扩展名过滤
     pub fn filter_by_extensions(&self, extensions: &[String], limit: usize) -> Vec<IndexedFile> {
         use rayon::prelude::*;

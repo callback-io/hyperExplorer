@@ -1,5 +1,6 @@
 {
   "searching": "Searching...",
   "no_results": "No results found",
-  "results_label": "Results"
+  "results_label": "Results",
+  "regex_toggle": "Toggle regex search"
 }
