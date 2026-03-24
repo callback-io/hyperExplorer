@@ -57,6 +57,7 @@ function CustomSelect({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -64,7 +65,7 @@ function CustomSelect({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const selectedLabel = options.find((o) => o.value === value)?.label;
 
@@ -110,7 +111,8 @@ function CustomSelect({
 
 function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
   const { t, i18n } = useTranslation();
-  // 使用 useSetting 自动管理状态同步
+  const [activeTab, setActiveTab] = useState<TabId>("general");
+
   const [theme, setTheme] = useSetting<"light" | "dark" | "system">("theme", "system");
   const [storedLanguage, setStoredLanguage] = useSetting<string | null>("language", null);
   const [showHidden, setShowHidden] = useSetting<boolean>("showHidden", false);
@@ -119,7 +121,6 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
     "com.apple.Terminal"
   );
 
-  const [activeTab, setActiveTab] = useState<TabId>("general");
   const [permissionStatus, setPermissionStatus] = useState<"unknown" | "authorized" | "denied">(
     "unknown"
   );
@@ -162,39 +163,28 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
     },
   ];
 
-  // 加载终端应用
-  const loadTerminalApps = useCallback(async () => {
-    try {
-      const apps = await openWithService.getTerminalApps();
-      setTerminalApps(apps);
-      const current = await openWithService.getDefaultTerminal();
-      if (current) setDefaultTerminal(current);
-    } catch (e) {
-      console.error("Failed to load terminal apps:", e);
-    }
-  }, [setDefaultTerminal]);
-
   useEffect(() => {
-    if (open) {
-      loadTerminalApps();
-    }
-  }, [open, loadTerminalApps]);
+    if (!open) return;
 
-  // 移除旧的手动同步监听
-  // useEffect(() => { ... }, []);
+    let mounted = true;
 
-  // 处理终端变更
-  const handleTerminalChange = async (bundleId: string) => {
-    // openWithService 需要更新（如果它还依赖手动 store 操作的话），
-    // 或者我们直接在这里更新 settingsManager，openWithService 只负责读
-    // 为了保持一致性，我们在这里调用 setDefaultTerminal，它会自动更新 store 和 emit
-    await openWithService.setDefaultTerminal(bundleId);
-    // Wait, openWithService.setDefaultTerminal 内部直接操作 store 并且 emit sync-settings
-    // 因为我们有了 useSetting，我们可以直接调用 Hook 的 setter：
+    Promise.all([openWithService.getTerminalApps(), openWithService.getDefaultTerminal()])
+      .then(([apps, current]) => {
+        if (!mounted) return;
+        setTerminalApps(apps);
+        if (current) setDefaultTerminal(current);
+      })
+      .catch((e) => {
+        console.error("Failed to load terminal apps:", e);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [open, setDefaultTerminal]);
+
+  const handleTerminalChange = (bundleId: string) => {
     setDefaultTerminal(bundleId);
-    // 但是 openWithService.setDefaultTerminal 做的事也是 set store。
-    // 如果我们用 hook setter，它是通用的。
-    // 我们可以让 openWithService 读取 store，而写入操作统一在组件层（或者通过 settingsManager）。
   };
 
   const checkPermission = useCallback(async () => {
@@ -277,25 +267,10 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
-  // Portals 需要在客户端渲染
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
+  if (!open) return null;
 
-  if (!mounted) return null;
-
-  // 使用 createPortal 渲染到 body，避免被父元素的 transform 影响
-  // 使用 createPortal 渲染到 body，避免被父元素的 transform 影响
   return createPortal(
-    <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-150 ${
-        open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-      }`}
-    >
-      {" "}
-      {/* 遮罩层 - 不可点击关闭 */}
+    <div className="pointer-events-auto fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="fixed inset-0 bg-black/80" />
       {/* 弹窗主体 */}
       <div className="bg-background/80 relative z-10 h-[600px] w-full max-w-[750px] overflow-hidden rounded-xl border-none p-0 shadow-2xl backdrop-blur-xl">
