@@ -22,6 +22,34 @@ import { SmartIcon } from "@/components/SmartIcon";
 
 import { FileEntry, FolderItem, SidebarItemActions } from "@/types";
 
+/** 侧边栏目录拖拽放入处理 */
+function makeSidebarDropHandlers(targetPath: string) {
+  return {
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      e.currentTarget.classList.add("bg-primary/20");
+    },
+    onDragLeave: (e: React.DragEvent) => {
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        e.currentTarget.classList.remove("bg-primary/20");
+      }
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      e.currentTarget.classList.remove("bg-primary/20");
+      try {
+        const data = JSON.parse(e.dataTransfer.getData("application/json"));
+        if (data?.path && data.path !== targetPath) {
+          invoke("move_file", { src: data.path, destDir: targetPath }).catch(console.error);
+        }
+      } catch {
+        // ignore invalid drag data
+      }
+    },
+  };
+}
+
 interface SidebarProps {
   onNavigate: (path: string) => void;
 }
@@ -208,6 +236,7 @@ function FolderTreeItem({
           className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
           style={{ paddingLeft: `${level * 12 + 8}px` }}
           onClick={() => onNavigate(item.path)}
+          {...makeSidebarDropHandlers(item.path)}
         >
           {/* 展开/折叠箭头 */}
           <div
@@ -331,6 +360,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 <button
                   className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
                   onClick={() => onNavigate(item.path)}
+                  {...makeSidebarDropHandlers(item.path)}
                 >
                   <SmartIcon
                     icon={item.icon}
