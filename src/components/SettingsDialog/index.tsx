@@ -168,11 +168,10 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
 
     let mounted = true;
 
-    Promise.all([openWithService.getTerminalApps(), openWithService.getDefaultTerminal()])
-      .then(([apps, current]) => {
-        if (!mounted) return;
-        setTerminalApps(apps);
-        if (current) setDefaultTerminal(current);
+    openWithService
+      .getTerminalApps()
+      .then((apps) => {
+        if (mounted) setTerminalApps(apps);
       })
       .catch((e) => {
         console.error("Failed to load terminal apps:", e);
@@ -181,7 +180,7 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, setDefaultTerminal]);
+  }, [open]);
 
   const handleTerminalChange = (bundleId: string) => {
     setDefaultTerminal(bundleId);
@@ -260,8 +259,7 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
       await invoke("open_url", {
         url: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles",
       });
-      // 给用户一点时间操作，然后检查（虽然 focus 事件通常会处理）
-      setTimeout(checkPermission, 1000);
+      // focus 事件监听会在用户切回时自动触发 checkPermission
     } catch (e) {
       console.error("Failed to open settings", e);
     }
@@ -322,7 +320,6 @@ function SettingsDialogComponent({ open, onOpenChange }: SettingsDialogProps) {
             <div className="min-h-0 flex-1 overflow-y-auto p-8">
               {activeTab === "general" && (
                 <div className="space-y-8">
-                  {/* 语言设置项 */}
                   {/* 外观设置 (Theme) */}
                   <div className="group flex items-center justify-between">
                     <div className="space-y-1">
